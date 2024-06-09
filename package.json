@@ -1,0 +1,17 @@
+{
+  "name": "qinglong-site",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "rspress dev",
+    "build": "rspress build",
+    "preview": "rspress preview"
+  },
+  "dependencies": {
+    "rspress": "^1.22.0"
+  },
+  "devDependencies": {
+    "rspress-plugin-font-open-sans": "^1.0.0",
+    "@types/node": "^16"
+  }
+}

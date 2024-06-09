@@ -1,0 +1,17 @@
+[
+  {
+    "type": "file",
+    "name": "index",
+    "label": "api-overview"
+  },
+  {
+    "type": "file",
+    "name": "preparation",
+    "label": "preparation"
+  },
+  {
+    "type": "dir",
+    "name": "crontab",
+    "label": "crontab"
+  }
+]
