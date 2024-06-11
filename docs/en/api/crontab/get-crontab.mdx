@@ -1,3 +1,59 @@
 # Get Crontabs
 
-## 22
+> GET  /open/crons
+
+### Query Params
+
+| Field Name     | Field Type | Default Value |
+|----------------|------------|---------------|
+| searchValue    | string     | ''             |
+| page           | integer    | 1             |
+| size           | integer    | 20            |
+| filters        | JSON       | {}  |
+| queryString    | JSON       | \{"filters":null,"sorts":null,"filterRelation":"and"} |
+
+### Header Params
+
+```json
+{
+  "Authorization": "Bearer {{token}}"
+}
+```
+
+### Body Params
+
+```json
+{}
+```
+
+### Response Body Params
+
+```json
+{
+  "code": 200,
+  "data": [
+    {
+      "id": 1,
+      "name": "任务名称",
+      "command": "test.py",
+      "schedule": "10 1 8 * * *",
+      "timestamp": "Sat Feb 17 2024 15:46:21 GMT+0800 (China Standard Time)",
+      "status": 1,
+      "isSystem": 0,
+      "pid": 524206,
+      "isDisabled": 0,
+      "isPinned": 0,
+      "log_path": "test/2024-06-11-17-50-10-139.log",
+      "labels": [],
+      "last_running_time": 1,
+      "last_execution_time": 1718099410,
+      "sub_id": null,
+      "extra_schedules": null,
+      "task_before": null,
+      "task_after": null,
+      "createdAt": "2023-12-17T06:39:17.478Z",
+      "updatedAt": "2024-06-11T09:50:10.968Z"
+    }
+  ]
+}
+```

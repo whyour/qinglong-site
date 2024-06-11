@@ -8,7 +8,7 @@ export default defineConfig({
   markdown: {
     checkDeadLinks: true,
   },
-  lang: "en",
+  lang: "zh",
   icon: "https://qn.whyour.cn/favicon.svg",
   logo: {
     light: "/logo-light.png",
