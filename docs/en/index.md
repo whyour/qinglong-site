@@ -10,10 +10,10 @@ hero:
   actions:
     - theme: brand
       text: Introduction
-      link: /guide/start/introduction
+      link: /en/guide/start/introduction
     - theme: alt
       text: Quick Start
-      link: /guide/start/getting-started
+      link: /en/guide/start/getting-started
   image:
     src: https://qn.whyour.cn/logo.png
     alt: Qinglong Logo
