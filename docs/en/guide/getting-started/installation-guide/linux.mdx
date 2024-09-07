@@ -1,0 +1,21 @@
+# Local
+
+It is recommended to use a pure system installation to avoid losing the original system data, you need to install node/npm/python3/pip3 yourself
+
+```bash
+# Debian/Ubuntu
+curl -sL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+# Centos
+curl --silent --location https://rpm.nodesource.com/setup_20.x | sudo bash
+```
+
+```bash
+npm install -g node-pre-gyp pnpm
+npm install -g @whyour/qinglong
+qinglong
+# Add the environment variables QL_DIR and QL_DATA_DIR when prompted
+export QL_DIR=""
+export QL_DATA_DIR=""
+# Run again
+qinglong
+```

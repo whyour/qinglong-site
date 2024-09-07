@@ -8,11 +8,11 @@ hero:
   tagline: 支持多种脚本语言
   actions:
     - theme: brand
-      text: 介绍
-      link: /guide/start/introduction
-    - theme: alt
       text: 快速开始
-      link: /guide/start/getting-started
+      link: /guide/getting-started/installation-guide
+    - theme: alt
+      text: Demo
+      link: http://demo.ninesix.cc:4433/
   image:
     src: https://qn.whyour.cn/logo.png
     alt: Qinglong Logo

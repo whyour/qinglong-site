@@ -1,0 +1,17 @@
+# Podman
+
+```bash
+# https://podman.io/getting-started/installation
+podman run -dit \
+  --network bridge \
+  -v $PWD/ql/data:/ql/data \
+  # The 5700 after the colon is the default port, if QlPort is set, it needs to be the same as QlPort.
+  -p 5700:5700 \
+  # Deployment paths are not required, e.g. /test.
+  -e QlBaseUrl="/" \
+  # Deployment port is not required, when using host mode, you can set the port after service startup, default 5700
+  -e QlPort="5700" \
+  --name qinglong \
+  --hostname qinglong \
+  docker.io/whyour/qinglong:latest
+```

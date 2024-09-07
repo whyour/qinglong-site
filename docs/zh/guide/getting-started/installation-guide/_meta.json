@@ -1,0 +1,22 @@
+[
+  {
+    "name": "docker-compose",
+    "label": "docker-compose"
+  },
+  {
+    "name": "baota",
+    "label": "baota"
+  },
+  {
+    "name": "docker",
+    "label": "docker"
+  },
+  {
+    "name": "podman",
+    "label": "podman"
+  },
+  {
+    "name": "linux",
+    "label": "linux"
+  }
+]

@@ -1,7 +1,13 @@
 [
+  "introduction",
   {
     "type": "dir",
-    "name": "start",
+    "name": "getting-started",
     "label": "getting-started"
+  },
+  {
+    "type": "dir",
+    "name": "user-guide",
+    "label": "user-guide"
   }
 ]

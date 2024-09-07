@@ -10,10 +10,10 @@ hero:
   actions:
     - theme: brand
       text: Introduction
-      link: /en/guide/start/introduction
+      link: /guide/getting-started/installation-guide
     - theme: alt
-      text: Quick Start
-      link: /en/guide/start/getting-started
+      text: Demo
+      link: http://demo.ninesix.cc:4433/
   image:
     src: https://qn.whyour.cn/logo.png
     alt: Qinglong Logo

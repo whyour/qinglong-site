@@ -1,6 +1,6 @@
 {
   "getting-started": {
-    "zh": "开始",
+    "zh": "入门",
     "en": "Getting Started"
   },
   "api-overview": {
@@ -26,5 +26,33 @@
   "api": {
     "zh": "API",
     "en": "API"
+  },
+  "installation-guide": {
+    "zh": "安装指南",
+    "en": "Installation Guide"
+  },
+  "baota": {
+    "zh": "宝塔 部署",
+    "en": "Baota Deploy"
+  },
+  "docker": {
+    "zh": "Docker 部署",
+    "en": "Docker Deploy"
+  },
+  "docker-compose": {
+    "zh": "Docker Compose 部署",
+    "en": "Docker Compose Deploy"
+  },
+  "linux": {
+    "zh": "Linux 部署",
+    "en": "Linux Deploy"
+  },
+  "podman": {
+    "zh": "Podman 部署",
+    "en": "Podman Deploy"
+  },
+  "user-guide": {
+    "zh": "用户指南",
+    "en": "User Guide"
   }
 }
