@@ -1,1 +1,53 @@
-# baota
+## One-click deployment using the Pagoda panel
+
+## Installing Pagoda Panel
+
+### Method 1
+
+To install Pagoda Panel, go to the official website of Pagoda Panel (https://www.bt.cn/u/EcDAFU) and select the corresponding script to download and install.
+
+### Method 2
+
+```shell
+# Centos 安装脚本
+yum install -y wget && wget -O install.sh http://download.bt.cn/install/install_6.0.sh && sh install.sh 3d207099a
+
+# Ubuntu/Deepin 安装脚本
+wget -O install.sh http://download.bt.cn/install/install-ubuntu_6.0.sh && sudo bash install.sh 3d207099a
+
+# Debian 安装脚本
+wget -O install.sh http://download.bt.cn/install/install-ubuntu_6.0.sh && bash install.sh 3d207099a
+
+# Fedora 安装脚本
+wget -O install.sh http://download.bt.cn/install/install_6.0.sh && bash install.sh 3d207099a
+
+# 更新安装脚本
+wget -O update.sh http://download.bt.cn/install/update6.sh && sh update.sh 3d207099a
+
+# 升级脚本
+wget -O update.sh http://download.bt.cn/install/update.sh && sh update.sh
+```
+
+Execute the above command to install the pagoda panel
+
+## Deployment
+
+1. Log in to Pagoda Panel and click `Docker` in the menu bar.
+![Docker](/baota/docker.png)
+
+2. The first time you will be prompted to install, click Install Now and follow the prompts to complete the installation.
+![Install](/baota/install.png)
+
+3. After the installation is complete, find `Qinglong Panel` in the app shop and click install!
+![Qinglong](/baota/qinglong.png)
+
+4. Set the domain name and other basic information, click OK!
+![Setup](/baota/setting.png)
+
+## Access Panel
+
+- After the installation is complete, the browser to open the just set up the domain name can be accessed, access will be prompted to initialise the configuration
+![Login initialisation configuration](/baota/init.png)
+
+- Follow the prompts to complete the initial configuration of the panel after logging in the panel
+![Login](/baota/login.png)

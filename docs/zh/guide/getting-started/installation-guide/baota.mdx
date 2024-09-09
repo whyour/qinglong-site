@@ -1,1 +1,53 @@
-# 宝塔
+# 使用宝塔面板一键部署
+
+## 安装宝塔面板
+
+### 方式一
+
+安装宝塔面板，前往[宝塔面板](https://www.bt.cn/u/EcDAFU)官网，选择对应的脚本下载安装
+
+### 方式二
+
+```shell
+# Centos 安装脚本
+yum install -y wget && wget -O install.sh http://download.bt.cn/install/install_6.0.sh && sh install.sh 3d207099a
+
+# Ubuntu/Deepin 安装脚本
+wget -O install.sh http://download.bt.cn/install/install-ubuntu_6.0.sh && sudo bash install.sh 3d207099a
+
+# Debian 安装脚本
+wget -O install.sh http://download.bt.cn/install/install-ubuntu_6.0.sh && bash install.sh 3d207099a
+
+# Fedora安装脚本
+wget -O install.sh http://download.bt.cn/install/install_6.0.sh && bash install.sh 3d207099a
+
+# update安装脚本
+wget -O update.sh http://download.bt.cn/install/update6.sh && sh update.sh 3d207099a
+
+# 升级脚本
+wget -O update.sh http://download.bt.cn/install/update.sh && sh update.sh
+```
+
+执行上述命令，安装宝塔面板
+
+## 部署
+
+1. 登录宝塔面板，在菜单栏中点击 `Docker`
+![Docker](/baota/docker.png)
+
+2. 首次会提示安装，点击立即安装，按提示完成安装
+![安装](/baota/install.png)
+
+3. 安装完成后在应用商店中找到 `青龙面板`，点击安装
+![青龙](/baota/qinglong.png)
+
+4. 设置域名等基本信息，点击确定
+![设置](/baota/setting.png)
+
+## 访问面板
+
+- 安装完成后，浏览器打开刚刚设置的域名即可访问 ，访问后会提示进行初始化配置
+![登初始化配置](/baota/init.png)
+
+- 按照提示完成面板初始化配置后登录面板
+![登录](/baota/login.png)

@@ -1,11 +1,11 @@
 [
   {
-    "name": "docker-compose",
-    "label": "docker-compose"
-  },
-  {
     "name": "baota",
     "label": "baota"
+  },
+  {
+    "name": "docker-compose",
+    "label": "docker-compose"
   },
   {
     "name": "docker",
