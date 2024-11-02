@@ -1,3 +1,297 @@
----
-overview: true
----
+# 定时任务 API 文档
+
+## 基础路径
+`/crons`
+
+## 接口列表
+
+### 定时任务视图管理
+
+#### 获取视图列表
+```http
+GET /views
+```
+
+获取所有定时任务视图。
+
+#### 创建视图
+```http
+POST /views
+```
+
+**请求体**
+```typescript
+{
+  name: string,           // 视图名称
+  sorts?: Array<any>,     // 排序规则
+  filters?: Array<any>,   // 过滤规则
+  filterRelation?: string // 过滤关系
+}
+```
+
+#### 更新视图
+```http
+PUT /views
+```
+
+**请求体**
+```typescript
+{
+  id: number,            // 视图ID
+  name: string,          // 视图名称
+  sorts?: Array<any>,    // 排序规则
+  filters?: Array<any>,  // 过滤规则
+  filterRelation?: string // 过滤关系
+}
+```
+
+#### 删除视图
+```http
+DELETE /views
+```
+
+**请求体**
+```typescript
+number[]  // 视图ID数组
+```
+
+#### 移动视图位置
+```http
+PUT /views/move
+```
+
+**请求体**
+```typescript
+{
+  fromIndex: number,  // 原位置
+  toIndex: number,    // 目标位置
+  id: number         // 视图ID
+}
+```
+
+#### 禁用视图
+```http
+PUT /views/disable
+```
+
+**请求体**
+```typescript
+number[]  // 视图ID数组
+```
+
+#### 启用视图
+```http
+PUT /views/enable
+```
+
+**请求体**
+```typescript
+number[]  // 视图ID数组
+```
+
+### 定时任务管理
+
+#### 获取定时任务列表
+```http
+GET /
+```
+
+获取定时任务列表。
+
+#### 获取任务详情
+```http
+GET /detail
+```
+
+获取指定任务的详细信息。
+
+#### 创建定时任务
+```http
+POST /
+```
+
+**请求体**
+```typescript
+{
+  command: string,         // 执行的命令
+  schedule: string,        // cron表达式
+  name?: string,          // 任务名称
+  labels?: string[],      // 标签
+  sub_id?: number,        // 子任务ID
+  extra_schedules?: any[], // 额外的定时规则
+  task_before?: string,   // 前置任务
+  task_after?: string     // 后置任务
+}
+```
+
+#### 运行任务
+```http
+PUT /run
+```
+
+**请求体**
+```typescript
+number[]  // 任务ID数组
+```
+
+#### 停止任务
+```http
+PUT /stop
+```
+
+**请求体**
+```typescript
+number[]  // 任务ID数组
+```
+
+#### 删除标签
+```http
+DELETE /labels
+```
+
+**请求体**
+```typescript
+{
+  ids: number[],    // 任务ID数组
+  labels: string[]  // 标签数组
+}
+```
+
+#### 添加标签
+```http
+POST /labels
+```
+
+**请求体**
+```typescript
+{
+  ids: number[],    // 任务ID数组
+  labels: string[]  // 标签数组
+}
+```
+
+#### 禁用任务
+```http
+PUT /disable
+```
+
+**请求体**
+```typescript
+number[]  // 任务ID数组
+```
+
+#### 启用任务
+```http
+PUT /enable
+```
+
+**请求体**
+```typescript
+number[]  // 任务ID数组
+```
+
+#### 获取任务日志
+```http
+GET /:id/log
+```
+
+获取指定任务的执行日志。
+
+#### 更新任务
+```http
+PUT /
+```
+
+**请求体**
+```typescript
+{
+  id: number,            // 任务ID
+  command: string,       // 执行的命令
+  schedule: string,      // cron表达式
+  name?: string,        // 任务名称
+  labels?: string[],    // 标签
+  sub_id?: number,      // 子任务ID
+  extra_schedules?: any[], // 额外的定时规则
+  task_before?: string, // 前置任务
+  task_after?: string   // 后置任务
+}
+```
+
+#### 删除任务
+```http
+DELETE /
+```
+
+**请求体**
+```typescript
+number[]  // 任务ID数组
+```
+
+#### 置顶任务
+```http
+PUT /pin
+```
+
+**请求体**
+```typescript
+number[]  // 任务ID数组
+```
+
+#### 取消置顶
+```http
+PUT /unpin
+```
+
+**请求体**
+```typescript
+number[]  // 任务ID数组
+```
+
+#### 导入定时任务
+```http
+GET /import
+```
+
+从 crontab 导入定时任务。
+
+#### 获取单个任务
+```http
+GET /:id
+```
+
+获取指定ID的任务信息。
+
+#### 更新任务状态
+```http
+PUT /status
+```
+
+**请求体**
+```typescript
+{
+  ids: number[],           // 任务ID数组
+  status: string,          // 状态
+  pid?: string,           // 进程ID
+  log_path?: string,      // 日志路径
+  last_running_time?: number,    // 最后运行时间
+  last_execution_time?: number   // 最后执行时间
+}
+```
+
+#### 获取任务日志列表
+```http
+GET /:id/logs
+```
+
+获取指定任务的所有日志记录。
+
+## 错误处理
+所有接口遵循相同的错误处理模式：
+- 错误会传递给下一个中间件
+- 成功响应返回 `{ code: 200, data: ... }`
+- 错误日志由 Winston logger 处理
+
+## 注意事项
+- 所有路由都使用 celebrate/Joi 进行参数验证
+- cron 表达式会通过 cron-parser 进行有效性验证
+- 批量操作接口（如运行、停止、删除等）都接受任务ID数组

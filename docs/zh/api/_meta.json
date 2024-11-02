@@ -10,8 +10,43 @@
     "label": "preparation"
   },
   {
-    "type": "dir",
+    "type": "file",
     "name": "crontab",
     "label": "crontab"
+  },
+  {
+    "type": "file",
+    "name": "subscription",
+    "label": "subscription"
+  },
+  {
+    "type": "file",
+    "name": "env",
+    "label": "env"
+  },
+  {
+    "type": "file",
+    "name": "config",
+    "label": "config"
+  },
+  {
+    "type": "file",
+    "name": "script",
+    "label": "script"
+  },
+  {
+    "type": "file",
+    "name": "dependence",
+    "label": "dependence"
+  },
+  {
+    "type": "file",
+    "name": "log",
+    "label": "log"
+  },
+  {
+    "type": "file",
+    "name": "system",
+    "label": "system"
   }
 ]

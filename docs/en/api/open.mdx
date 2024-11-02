@@ -1,0 +1,85 @@
+# Open Platform API Documentation
+
+## Base Path
+`/`
+
+## Endpoints
+
+### Application Management
+
+#### Get Applications List
+```http
+GET /apps
+```
+
+Get list of all created applications.
+
+#### Create Application
+```http
+POST /apps
+```
+
+**Request Body**
+```typescript
+{
+  name: string,      // Application name (cannot be 'system')
+  scopes: string[]   // Permission scopes
+}
+```
+
+#### Update Application
+```http
+PUT /apps
+```
+
+**Request Body**
+```typescript
+{
+  id: number,       // Application ID
+  name: string,     // Application name
+  scopes: string[]  // Permission scopes
+}
+```
+
+#### Delete Applications
+```http
+DELETE /apps
+```
+
+**Request Body**
+```typescript
+number[]  // Array of application IDs
+```
+
+#### Reset Application Secret
+```http
+PUT /apps/:id/reset-secret
+```
+
+Reset the secret key for specified application.
+
+### Authentication
+
+#### Get Access Token
+```http
+GET /auth/token
+```
+
+**Query Parameters**
+```typescript
+{
+  client_id: string,     // Client ID
+  client_secret: string  // Client Secret
+}
+```
+
+## Error Handling
+- All endpoints follow unified error handling mechanism
+- Successful responses return `{ code: 200, data: ... }`
+- Error logging is handled by Winston logger
+
+## Notes
+- Parameter validation using celebrate/Joi
+- Application name cannot use reserved word 'system'
+- Supports batch deletion of applications
+- Secret reset operation is irreversible

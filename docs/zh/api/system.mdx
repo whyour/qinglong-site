@@ -1,0 +1,245 @@
+# System API 文档
+
+## 基础路径
+`/system`
+
+## 接口列表
+
+### 系统信息
+```http
+GET /
+```
+
+返回系统初始化状态和版本信息。
+
+**响应**
+```typescript
+{
+  code: 200,
+  data: {
+    isInitialized: boolean,  // 是否已初始化
+    version: string,         // 版本号
+    publishTime: number,     // 发布时间(Unix时间戳)
+    branch: string,          // 分支
+    changeLog: string,       // 更新日志
+    changeLogLink: string    // 更新日志链接
+  }
+}
+```
+
+
+### 系统配置
+
+#### 获取配置
+```http
+GET /config
+```
+
+获取系统配置信息。
+
+#### 更新日志清理频率
+```http
+PUT /config/log-remove-frequency
+```
+
+**请求体**
+```typescript
+{
+  logRemoveFrequency: number | null  // 日志清理频率
+}
+```
+
+
+#### 更新定时任务并发数
+```http
+PUT /config/cron-concurrency
+```
+
+**请求体**
+```typescript
+{
+  cronConcurrency: number | null  // 定时任务并发数
+}
+```
+
+
+#### 更新依赖代理
+```http
+PUT /config/dependence-proxy
+```
+
+**请求体**
+```typescript
+{
+  dependenceProxy: string | null  // 依赖代理地址
+}
+```
+
+
+#### 更新 Node 镜像
+```http
+PUT /config/node-mirror
+```
+
+**请求体**
+```typescript
+{
+  nodeMirror: string | null  // Node镜像地址
+}
+```
+
+
+#### 更新 Python 镜像
+```http
+PUT /config/python-mirror
+```
+
+**请求体**
+```typescript
+{
+  pythonMirror: string | null  // Python镜像地址
+}
+```
+
+
+#### 更新 Linux 镜像
+```http
+PUT /config/linux-mirror
+```
+
+**请求体**
+```typescript
+{
+  linuxMirror: string | null  // Linux镜像地址
+}
+```
+
+
+### 系统操作
+
+#### 检查更新
+```http
+PUT /update-check
+```
+
+检查系统更新。
+
+#### 更新系统
+```http
+PUT /update
+```
+
+执行系统更新。
+
+#### 重载系统
+```http
+PUT /reload
+```
+
+**请求体**
+```typescript
+{
+  type?: string | null  // 重载类型
+}
+```
+
+
+#### 发送通知
+```http
+PUT /notify
+```
+
+**请求体**
+```typescript
+{
+  title: string,    // 通知标题
+  content: string   // 通知内容
+}
+```
+
+
+### 命令管理
+
+#### 运行命令
+```http
+PUT /command-run
+```
+
+**请求体**
+```typescript
+{
+  command: string  // 要执行的命令
+}
+```
+
+**响应头**
+- `Content-type: application/octet-stream`
+- `QL-Task-Pid: <进程ID>`
+
+#### 停止命令
+```http
+PUT /command-stop
+```
+
+**请求体**
+```typescript
+{
+  command?: string,  // 要停止的命令
+  pid?: number      // 进程ID
+}
+```
+
+
+### 数据管理
+
+#### 导出数据
+```http
+PUT /data/export
+```
+
+导出系统数据。
+
+#### 导入数据
+```http
+PUT /data/import
+```
+
+**请求**
+- Content-Type: `multipart/form-data`
+- 字段: `data` (文件)
+
+### 日志管理
+
+#### 获取系统日志
+```http
+GET /log
+```
+
+**查询参数**
+```typescript
+{
+  startTime?: string,  // 开始时间
+  endTime?: string,    // 结束时间
+  t?: string          // 类型
+}
+```
+
+
+#### 删除系统日志
+```http
+DELETE /log
+```
+
+删除系统日志。
+
+## 错误处理
+所有接口遵循相同的错误处理模式：
+- 错误会传递给下一个中间件
+- 大多数成功响应返回 `{ code: 200, data: ... }`
+- 错误日志由 Winston logger 处理
+
+## 注意事项
+- 所有路由都使用 celebrate/Joi 进行参数验证
+- 文件操作使用异步 fs promises
+- 临时文件存储在配置的临时路径中
+- 日志文件包含时间戳格式：`YYYY-MM-DD-HH-mm-ss-SSS`

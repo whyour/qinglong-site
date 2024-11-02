@@ -1,0 +1,94 @@
+# Configuration API Documentation
+
+## Base Path
+`/configs`
+
+## Endpoints
+
+### Get Sample Files List
+```http
+GET /sample
+```
+
+Get the list of predefined sample configuration files.
+
+**Response**
+```typescript
+{
+  code: 200,
+  data: SAMPLE_FILES  // List of sample files
+}
+```
+
+### Get Configuration Files List
+```http
+GET /files
+```
+
+Get list of all available configuration files.
+
+**Response**
+```typescript
+{
+  code: 200,
+  data: [
+    {
+      title: string,  // File name
+      value: string   // File value
+    }
+  ]
+}
+```
+
+### Get File Details
+```http
+GET /detail
+```
+
+**Query Parameters**
+```typescript
+{
+  path: string  // File path
+}
+```
+
+Get the content of specified configuration file.
+
+### Save Configuration File
+```http
+POST /save
+```
+
+**Request Body**
+```typescript
+{
+  name: string,     // File name
+  content: string   // File content
+}
+```
+
+**Response**
+```typescript
+{
+  code: 200,
+  message: "Save successful"
+}
+```
+
+### Get Specific File
+```http
+GET /:file
+```
+
+Get the content of a configuration file by its name.
+
+## Error Handling
+- All endpoints follow unified error handling mechanism
+- Successful responses return `{ code: 200, data: ... }`
+- Error logging is handled by Winston logger
+- Access to blacklisted files will return 403 error
+
+## Notes
+- Parameter validation using celebrate/Joi
+- File operations using fs/promises for async handling
+- Some file paths are restricted by blacklist

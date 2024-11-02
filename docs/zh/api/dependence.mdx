@@ -1,0 +1,100 @@
+# 依赖管理 API 文档
+
+## 基础路径
+`/dependencies`
+
+## 接口列表
+
+### 获取依赖列表
+```http
+GET /
+```
+
+获取所有依赖项列表。
+
+### 创建依赖
+```http
+POST /
+```
+
+**请求体**
+```typescript
+[
+  {
+    name: string,    // 依赖名称
+    type: number,    // 依赖类型
+    remark: string   // 备注（可选）
+  }
+]
+```
+
+### 更新依赖
+```http
+PUT /
+```
+
+**请求体**
+```typescript
+{
+  id: number,      // 依赖ID
+  name: string,    // 依赖名称
+  type: number,    // 依赖类型
+  remark: string   // 备注（可选）
+}
+```
+
+### 删除依赖
+```http
+DELETE /
+```
+
+**请求体**
+```typescript
+number[]  // 依赖ID数组
+```
+
+### 强制删除依赖
+```http
+DELETE /force
+```
+
+**请求体**
+```typescript
+number[]  // 依赖ID数组
+```
+
+### 获取单个依赖
+```http
+GET /:id
+```
+
+获取指定ID的依赖详情。
+
+### 重新安装依赖
+```http
+PUT /reinstall
+```
+
+**请求体**
+```typescript
+number[]  // 依赖ID数组
+```
+
+### 取消安装
+```http
+PUT /cancel
+```
+
+**请求体**
+```typescript
+number[]  // 依赖ID数组
+```
+
+## 错误处理
+- 所有接口遵循统一的错误处理机制
+- 成功响应返回 `{ code: 200, data: ... }`
+- 错误日志由 Winston logger 处理
+
+## 注意事项
+- 使用 celebrate/Joi 进行参数验证
+- 支持批量操作（删除、重装、取消等）

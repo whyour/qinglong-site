@@ -1,0 +1,145 @@
+# 脚本管理 API 文档
+
+## 基础路径
+`/scripts`
+
+## 接口列表
+
+### 获取脚本列表
+```http
+GET /
+```
+
+**查询参数**
+```typescript
+{
+  path?: string  // 脚本路径
+}
+```
+
+**注意**
+- 排除黑名单文件夹（node_modules, .git 等）
+- 目录优先排序
+
+### 获取脚本详情
+```http
+GET /detail
+```
+
+**查询参数**
+```typescript
+{
+  path?: string,  // 脚本路径
+  file: string    // 文件名
+}
+```
+
+### 上传/创建脚本
+```http
+POST /
+```
+
+**请求体** (multipart/form-data)
+```typescript
+{
+  file?: File,           // 上传的文件
+  filename: string,      // 文件名
+  path?: string,         // 文件路径
+  content?: string,      // 文件内容
+  originFilename?: string, // 原文件名
+  directory?: string     // 目录名（创建目录时使用）
+}
+```
+
+### 更新脚本内容
+```http
+PUT /
+```
+
+**请求体**
+```typescript
+{
+  filename: string,  // 文件名
+  path?: string,    // 文件路径
+  content: string   // 文件内容
+}
+```
+
+### 删除脚本
+```http
+DELETE /
+```
+
+**请求体**
+```typescript
+{
+  filename: string,  // 文件名
+  path?: string,    // 文件路径
+  type?: string     // 类型
+}
+```
+
+### 下载脚本
+```http
+POST /download
+```
+
+**请求体**
+```typescript
+{
+  filename: string  // 文件名
+}
+```
+
+### 运行脚本
+```http
+PUT /run
+```
+
+**请求体**
+```typescript
+{
+  filename: string,  // 文件名
+  content?: string, // 文件内容
+  path?: string    // 文件路径
+}
+```
+
+### 停止脚本
+```http
+PUT /stop
+```
+
+**请求体**
+```typescript
+{
+  filename: string,  // 文件名
+  path?: string,    // 文件路径
+  pid?: number      // 进程ID
+}
+```
+
+### 重命名脚本
+```http
+PUT /rename
+```
+
+**请求体**
+```typescript
+{
+  filename: string,    // 原文件名
+  path?: string,      // 文件路径
+  newFilename: string // 新文件名
+}
+```
+
+## 错误处理
+- 所有接口遵循统一的错误处理机制
+- 成功响应返回 `{ code: 200, data: ... }`
+- 错误日志由 Winston logger 处理
+
+## 注意事项
+- 使用 multer 处理文件上传
+- 文件路径安全检查
+- 支持文件备份
+- 临时文件自动清理

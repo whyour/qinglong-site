@@ -1,0 +1,145 @@
+# Script Management API Documentation
+
+## Base Path
+`/scripts`
+
+## Endpoints
+
+### Get Scripts List
+```http
+GET /
+```
+
+**Query Parameters**
+```typescript
+{
+  path?: string  // Script path
+}
+```
+
+**Notes**
+- Excludes blacklisted folders (node_modules, .git, etc.)
+- Directories are sorted first
+
+### Get Script Details
+```http
+GET /detail
+```
+
+**Query Parameters**
+```typescript
+{
+  path?: string,  // Script path
+  file: string    // File name
+}
+```
+
+### Upload/Create Script
+```http
+POST /
+```
+
+**Request Body** (multipart/form-data)
+```typescript
+{
+  file?: File,           // Uploaded file
+  filename: string,      // File name
+  path?: string,         // File path
+  content?: string,      // File content
+  originFilename?: string, // Original file name
+  directory?: string     // Directory name (for creating directories)
+}
+```
+
+### Update Script Content
+```http
+PUT /
+```
+
+**Request Body**
+```typescript
+{
+  filename: string,  // File name
+  path?: string,    // File path
+  content: string   // File content
+}
+```
+
+### Delete Script
+```http
+DELETE /
+```
+
+**Request Body**
+```typescript
+{
+  filename: string,  // File name
+  path?: string,    // File path
+  type?: string     // Type
+}
+```
+
+### Download Script
+```http
+POST /download
+```
+
+**Request Body**
+```typescript
+{
+  filename: string  // File name
+}
+```
+
+### Run Script
+```http
+PUT /run
+```
+
+**Request Body**
+```typescript
+{
+  filename: string,  // File name
+  content?: string, // File content
+  path?: string    // File path
+}
+```
+
+### Stop Script
+```http
+PUT /stop
+```
+
+**Request Body**
+```typescript
+{
+  filename: string,  // File name
+  path?: string,    // File path
+  pid?: number      // Process ID
+}
+```
+
+### Rename Script
+```http
+PUT /rename
+```
+
+**Request Body**
+```typescript
+{
+  filename: string,    // Original file name
+  path?: string,      // File path
+  newFilename: string // New file name
+}
+```
+
+## Error Handling
+- All endpoints follow unified error handling mechanism
+- Successful responses return `{ code: 200, data: ... }`
+- Error logging is handled by Winston logger
+
+## Notes
+- File uploads handled by multer
+- File path security checks
+- Supports file backup
+- Automatic temporary file cleanup

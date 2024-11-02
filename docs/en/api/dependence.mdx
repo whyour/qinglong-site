@@ -1,0 +1,100 @@
+# Dependencies API Documentation
+
+## Base Path
+`/dependencies`
+
+## Endpoints
+
+### Get Dependencies List
+```http
+GET /
+```
+
+Get list of all dependencies.
+
+### Create Dependencies
+```http
+POST /
+```
+
+**Request Body**
+```typescript
+[
+  {
+    name: string,    // Dependency name
+    type: number,    // Dependency type
+    remark: string   // Remark (optional)
+  }
+]
+```
+
+### Update Dependency
+```http
+PUT /
+```
+
+**Request Body**
+```typescript
+{
+  id: number,      // Dependency ID
+  name: string,    // Dependency name
+  type: number,    // Dependency type
+  remark: string   // Remark (optional)
+}
+```
+
+### Delete Dependencies
+```http
+DELETE /
+```
+
+**Request Body**
+```typescript
+number[]  // Array of dependency IDs
+```
+
+### Force Delete Dependencies
+```http
+DELETE /force
+```
+
+**Request Body**
+```typescript
+number[]  // Array of dependency IDs
+```
+
+### Get Single Dependency
+```http
+GET /:id
+```
+
+Get details of specified dependency ID.
+
+### Reinstall Dependencies
+```http
+PUT /reinstall
+```
+
+**Request Body**
+```typescript
+number[]  // Array of dependency IDs
+```
+
+### Cancel Installation
+```http
+PUT /cancel
+```
+
+**Request Body**
+```typescript
+number[]  // Array of dependency IDs
+```
+
+## Error Handling
+- All endpoints follow unified error handling mechanism
+- Successful responses return `{ code: 200, data: ... }`
+- Error logging is handled by Winston logger
+
+## Notes
+- Parameter validation using celebrate/Joi
+- Supports batch operations (delete, reinstall, cancel, etc.)

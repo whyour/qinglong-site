@@ -1,0 +1,72 @@
+# Logs API Documentation
+
+## Base Path
+`/logs`
+
+## Endpoints
+
+### Get Logs List
+```http
+GET /
+```
+
+Get list of all accessible log files (excluding blacklisted files).
+
+### Get Log Details
+```http
+GET /detail
+```
+
+**Query Parameters**
+```typescript
+{
+  path?: string,  // Log path
+  file?: string   // File name
+}
+```
+
+**Response**
+- Returns log content on success
+- Returns 403 error for restricted access
+
+### Get Specific Log File
+```http
+GET /:file
+```
+
+**Query Parameters**
+```typescript
+{
+  path?: string  // Log path
+}
+```
+
+**Response**
+- Returns log content on success
+- Returns 403 error for restricted access
+
+### Delete Log
+```http
+DELETE /
+```
+
+**Request Body**
+```typescript
+{
+  filename: string,  // File name
+  path: string,     // File path
+  type?: string     // Type (optional)
+}
+```
+
+## Error Handling
+- All endpoints follow unified error handling mechanism
+- Successful responses return `{ code: 200, data: ... }`
+- Error logging is handled by Winston logger
+- Access to blacklisted files returns 403 error
+
+## Notes
+- Parameter validation using celebrate/Joi
+- Blacklisted files (e.g., .tmp) are not accessible
+- All paths must be within configured log directory
+- Supports security checks for file paths and contents

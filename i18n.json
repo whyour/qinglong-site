@@ -54,5 +54,33 @@
   "user-guide": {
     "zh": "用户指南",
     "en": "User Guide"
+  },
+  "subscription": {
+    "zh": "订阅管理",
+    "en": "Subscription"
+  },
+  "env": {
+    "zh": "环境变量",
+    "en": "Env"
+  },
+  "config": {
+    "zh": "配置文件",
+    "en": "Config"
+  },
+  "script": {
+    "zh": "脚本管理",
+    "en": "Script"
+  },
+  "dependence": {
+    "zh": "依赖管理",
+    "en": "Dependence"
+  },
+  "log": {
+    "zh": "日志管理",
+    "en": "Log"
+  },
+  "system": {
+    "zh": "系统设置",
+    "en": "System"
   }
 }

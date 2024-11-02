@@ -1,3 +1,206 @@
----
-overview: true
----
+# Cron API Documentation
+
+## Base Path
+`/crons`
+
+## Endpoints
+
+### Cron View Management
+
+#### Get View List
+```http
+GET /views
+```
+
+Get all cron task views.
+
+#### Create View
+```http
+POST /views
+```
+
+**Request Body**
+```typescript
+{
+  name: string,           // View name
+  sorts?: Array<any>,     // Sort rules
+  filters?: Array<any>,   // Filter rules
+  filterRelation?: string // Filter relationship
+}
+```
+
+#### Update View
+```http
+PUT /views
+```
+
+**Request Body**
+```typescript
+{
+  id: number,            // View ID
+  name: string,          // View name
+  sorts?: Array<any>,    // Sort rules
+  filters?: Array<any>,  // Filter rules
+  filterRelation?: string // Filter relationship
+}
+```
+
+#### Delete View
+```http
+DELETE /views
+```
+
+**Request Body**
+```typescript
+number[]  // Array of view IDs
+```
+
+#### Move View Position
+```http
+PUT /views/move
+```
+
+**Request Body**
+```typescript
+{
+  fromIndex: number,  // Original position
+  toIndex: number,    // Target position
+  id: number         // View ID
+}
+```
+
+#### Disable View
+```http
+PUT /views/disable
+```
+
+**Request Body**
+```typescript
+number[]  // Array of view IDs
+```
+
+#### Enable View
+```http
+PUT /views/enable
+```
+
+**Request Body**
+```typescript
+number[]  // Array of view IDs
+```
+
+### Cron Task Management
+
+#### Get Cron Task List
+```http
+GET /
+```
+
+Get list of cron tasks.
+
+#### Get Task Details
+```http
+GET /detail
+```
+
+Get detailed information of specified task.
+
+#### Create Cron Task
+```http
+POST /
+```
+
+**Request Body**
+```typescript
+{
+  command: string,         // Command to execute
+  schedule: string,        // Cron expression
+  name?: string,          // Task name
+  labels?: string[],      // Labels
+  sub_id?: number,        // Sub-task ID
+  extra_schedules?: any[], // Additional scheduling rules
+  task_before?: string,   // Pre-task
+  task_after?: string     // Post-task
+}
+```
+
+#### Run Task
+```http
+PUT /run
+```
+
+**Request Body**
+```typescript
+number[]  // Array of task IDs
+```
+
+#### Stop Task
+```http
+PUT /stop
+```
+
+**Request Body**
+```typescript
+number[]  // Array of task IDs
+```
+
+#### Remove Labels
+```http
+DELETE /labels
+```
+
+**Request Body**
+```typescript
+{
+  ids: number[],    // Array of task IDs
+  labels: string[]  // Array of labels
+}
+```
+
+#### Add Labels
+```http
+POST /labels
+```
+
+**Request Body**
+```typescript
+{
+  ids: number[],    // Array of task IDs
+  labels: string[]  // Array of labels
+}
+```
+
+#### Disable Task
+```http
+PUT /disable
+```
+
+**Request Body**
+```typescript
+number[]  // Array of task IDs
+```
+
+#### Enable Task
+```http
+PUT /enable
+```
+
+**Request Body**
+```typescript
+number[]  // Array of task IDs
+```
+
+#### Get Task Log
+```http
+GET /:id/log
+```
+
+Get execution log of specified task.
+
+#### Update Task
+```http
+PUT /
+```
+
+**Request Body**
+```typescript

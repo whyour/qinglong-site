@@ -1,0 +1,127 @@
+# Subscription Management API Documentation
+
+## Base Path
+`/subscriptions`
+
+## Endpoints
+
+### Get Subscriptions List
+```http
+GET /
+```
+
+**Query Parameters**
+```typescript
+{
+  searchValue?: string,  // Search keyword
+  ids?: string          // Subscription IDs list
+}
+```
+
+### Create Subscription
+```http
+POST /
+```
+
+**Request Body**
+```typescript
+{
+  type: string,           // Subscription type
+  schedule?: string,      // Schedule
+  interval_schedule?: {   // Interval schedule
+    type: string,
+    value: number
+  },
+  name?: string,          // Name
+  url: string,           // Subscription URL
+  whitelist?: string,    // Whitelist
+  blacklist?: string,    // Blacklist
+  branch?: string,       // Branch
+  dependences?: string,  // Dependencies
+  pull_type?: string,    // Pull type
+  pull_option?: object,  // Pull options
+  extensions?: string,   // Extensions
+  sub_before?: string,   // Pre-execution script
+  sub_after?: string,    // Post-execution script
+  schedule_type: string, // Schedule type
+  alias: string,        // Alias
+  proxy?: string,       // Proxy
+  autoAddCron?: boolean, // Auto add cron task
+  autoDelCron?: boolean  // Auto delete cron task
+}
+```
+
+### Run Subscription
+```http
+PUT /run
+```
+
+**Request Body**
+```typescript
+number[]  // Array of subscription IDs
+```
+
+### Stop Subscription
+```http
+PUT /stop
+```
+
+**Request Body**
+```typescript
+number[]  // Array of subscription IDs
+```
+
+### Disable Subscription
+```http
+PUT /disable
+```
+
+**Request Body**
+```typescript
+number[]  // Array of subscription IDs
+```
+
+### Enable Subscription
+```http
+PUT /enable
+```
+
+**Request Body**
+```typescript
+number[]  // Array of subscription IDs
+```
+
+### Get Subscription Log
+```http
+GET /:id/log
+```
+
+### Update Subscription Status
+```http
+PUT /status
+```
+
+**Request Body**
+```typescript
+{
+  ids: number[],     // Array of subscription IDs
+  status: string,    // Status
+  pid?: string,      // Process ID
+  log_path?: string  // Log path
+}
+```
+
+### Get Subscription Logs List
+```http
+GET /:id/logs
+```
+
+## Error Handling
+- All endpoints follow unified error handling mechanism
+- Successful responses return `{ code: 200, data: ... }`
+- Error logging is handled by Winston logger
+
+## Notes
+- Parameter validation using celebrate/Joi
+- Cron expressions are validated through cron-parser
+- Supports batch operations (run, stop, enable, disable, etc.)

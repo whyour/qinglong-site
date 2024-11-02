@@ -1,0 +1,140 @@
+# User Management API Documentation
+
+## Base Path
+`/user`
+
+## Endpoints
+
+### User Login
+```http
+POST /login
+```
+
+**Request Body**
+```typescript
+{
+  username: string,  // Username
+  password: string   // Password
+}
+```
+
+**Note**
+- Rate limit: 100 requests per 15 minutes
+
+### User Logout
+```http
+POST /logout
+```
+
+### Update User Information
+```http
+PUT /
+```
+
+**Request Body**
+```typescript
+{
+  username: string,  // Username
+  password: string   // Password
+}
+```
+
+### Get User Information
+```http
+GET /
+```
+
+### Two-Factor Authentication
+
+#### Initialize Two-Factor
+```http
+GET /two-factor/init
+```
+
+#### Activate Two-Factor
+```http
+PUT /two-factor/active
+```
+
+**Request Body**
+```typescript
+{
+  code: string  // Verification code
+}
+```
+
+#### Deactivate Two-Factor
+```http
+PUT /two-factor/deactive
+```
+
+#### Two-Factor Login
+```http
+PUT /two-factor/login
+```
+
+**Request Body**
+```typescript
+{
+  code: string,     // Verification code
+  username: string, // Username
+  password: string  // Password
+}
+```
+
+### Login Log
+```http
+GET /login-log
+```
+
+### Notification Settings
+
+#### Get Notification Settings
+```http
+GET /notification
+```
+
+#### Update Notification Settings
+```http
+PUT /notification
+```
+
+### Initialization
+
+#### Initialize User Information
+```http
+PUT /init
+```
+
+**Request Body**
+```typescript
+{
+  username: string,  // Username
+  password: string   // Password
+}
+```
+
+#### Initialize Notification Settings
+```http
+PUT /notification/init
+```
+
+### Update Avatar
+```http
+PUT /avatar
+```
+
+**Request Body**
+- Content-Type: `multipart/form-data`
+- Field: `avatar` (file)
+
+## Error Handling
+- All endpoints follow unified error handling mechanism
+- Successful responses return `{ code: 200, data: ... }`
+- Error logging is handled by Winston logger
+
+## Notes
+- Parameter validation using celebrate/Joi
+- File uploads handled by multer
+- Avatar filenames generated using UUID
+- Some features are restricted in demo environment

@@ -1,0 +1,127 @@
+# 订阅管理 API 文档
+
+## 基础路径
+`/subscriptions`
+
+## 接口列表
+
+### 获取订阅列表
+```http
+GET /
+```
+
+**查询参数**
+```typescript
+{
+  searchValue?: string,  // 搜索关键词
+  ids?: string          // 订阅ID列表
+}
+```
+
+### 创建订阅
+```http
+POST /
+```
+
+**请求体**
+```typescript
+{
+  type: string,           // 订阅类型
+  schedule?: string,      // 定时计划
+  interval_schedule?: {   // 间隔计划
+    type: string,
+    value: number
+  },
+  name?: string,          // 名称
+  url: string,           // 订阅地址
+  whitelist?: string,    // 白名单
+  blacklist?: string,    // 黑名单
+  branch?: string,       // 分支
+  dependences?: string,  // 依赖
+  pull_type?: string,    // 拉取类型
+  pull_option?: object,  // 拉取选项
+  extensions?: string,   // 扩展
+  sub_before?: string,   // 执行前脚本
+  sub_after?: string,    // 执行后脚本
+  schedule_type: string, // 计划类型
+  alias: string,        // 别名
+  proxy?: string,       // 代理
+  autoAddCron?: boolean, // 自动添加定时任务
+  autoDelCron?: boolean  // 自动删除定时任务
+}
+```
+
+### 运行订阅
+```http
+PUT /run
+```
+
+**请求体**
+```typescript
+number[]  // 订阅ID数组
+```
+
+### 停止订阅
+```http
+PUT /stop
+```
+
+**请求体**
+```typescript
+number[]  // 订阅ID数组
+```
+
+### 禁用订阅
+```http
+PUT /disable
+```
+
+**请求体**
+```typescript
+number[]  // 订阅ID数组
+```
+
+### 启用订阅
+```http
+PUT /enable
+```
+
+**请求体**
+```typescript
+number[]  // 订阅ID数组
+```
+
+### 获取订阅日志
+```http
+GET /:id/log
+```
+
+### 更新订阅状态
+```http
+PUT /status
+```
+
+**请求体**
+```typescript
+{
+  ids: number[],     // 订阅ID数组
+  status: string,    // 状态
+  pid?: string,      // 进程ID
+  log_path?: string  // 日志路径
+}
+```
+
+### 获取订阅日志列表
+```http
+GET /:id/logs
+```
+
+## 错误处理
+- 所有接口遵循统一的错误处理机制
+- 成功响应返回 `{ code: 200, data: ... }`
+- 错误日志由 Winston logger 处理
+
+## 注意事项
+- 使用 celebrate/Joi 进行参数验证
+- cron 表达式会通过 cron-parser 进行有效性验证
+- 支持批量操作（运行、停止、启用、禁用等）

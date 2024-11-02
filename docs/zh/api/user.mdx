@@ -1,0 +1,140 @@
+# 用户管理 API 文档
+
+## 基础路径
+`/user`
+
+## 接口列表
+
+### 用户登录
+```http
+POST /login
+```
+
+**请求体**
+```typescript
+{
+  username: string,  // 用户名
+  password: string   // 密码
+}
+```
+
+**注意**
+- 限制速率：每15分钟最多100次请求
+
+### 用户登出
+```http
+POST /logout
+```
+
+### 更新用户信息
+```http
+PUT /
+```
+
+**请求体**
+```typescript
+{
+  username: string,  // 用户名
+  password: string   // 密码
+}
+```
+
+### 获取用户信息
+```http
+GET /
+```
+
+### 两步验证相关
+
+#### 初始化两步验证
+```http
+GET /two-factor/init
+```
+
+#### 激活两步验证
+```http
+PUT /two-factor/active
+```
+
+**请求体**
+```typescript
+{
+  code: string  // 验证码
+}
+```
+
+#### 停用两步验证
+```http
+PUT /two-factor/deactive
+```
+
+#### 两步验证登录
+```http
+PUT /two-factor/login
+```
+
+**请求体**
+```typescript
+{
+  code: string,     // 验证码
+  username: string, // 用户名
+  password: string  // 密码
+}
+```
+
+### 登录日志
+```http
+GET /login-log
+```
+
+### 通知设置
+
+#### 获取通知设置
+```http
+GET /notification
+```
+
+#### 更新通知设置
+```http
+PUT /notification
+```
+
+### 初始化设置
+
+#### 初始化用户信息
+```http
+PUT /init
+```
+
+**请求体**
+```typescript
+{
+  username: string,  // 用户名
+  password: string   // 密码
+}
+```
+
+#### 初始化通知设置
+```http
+PUT /notification/init
+```
+
+### 更新头像
+```http
+PUT /avatar
+```
+
+**请求体**
+- Content-Type: `multipart/form-data`
+- 字段: `avatar` (文件)
+
+## 错误处理
+- 所有接口遵循统一的错误处理机制
+- 成功响应返回 `{ code: 200, data: ... }`
+- 错误日志由 Winston logger 处理
+
+## 注意事项
+- 使用 celebrate/Joi 进行参数验证
+- 文件上传使用 multer 处理
+- 头像文件名使用 UUID 生成
+- 演示环境下部分功能受限

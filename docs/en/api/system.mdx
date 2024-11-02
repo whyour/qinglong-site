@@ -1,0 +1,245 @@
+# System API Documentation
+
+## Base Path
+`/system`
+
+## Endpoints
+
+### System Information
+```http
+GET /
+```
+
+Returns system initialization status and version information.
+
+**Response**
+```typescript
+{
+  code: 200,
+  data: {
+    isInitialized: boolean,
+    version: string,
+    publishTime: number,  // Unix timestamp
+    branch: string,
+    changeLog: string,
+    changeLogLink: string
+  }
+}
+```
+
+
+### System Configuration
+
+#### Get Configuration
+```http
+GET /config
+```
+
+Retrieves system configuration.
+
+#### Update Log Remove Frequency
+```http
+PUT /config/log-remove-frequency
+```
+
+**Request Body**
+```typescript
+{
+  logRemoveFrequency: number | null
+}
+```
+
+
+#### Update Cron Concurrency
+```http
+PUT /config/cron-concurrency
+```
+
+**Request Body**
+```typescript
+{
+  cronConcurrency: number | null
+}
+```
+
+
+#### Update Dependence Proxy
+```http
+PUT /config/dependence-proxy
+```
+
+**Request Body**
+```typescript
+{
+  dependenceProxy: string | null
+}
+```
+
+
+#### Update Node Mirror
+```http
+PUT /config/node-mirror
+```
+
+**Request Body**
+```typescript
+{
+  nodeMirror: string | null
+}
+```
+
+
+#### Update Python Mirror
+```http
+PUT /config/python-mirror
+```
+
+**Request Body**
+```typescript
+{
+  pythonMirror: string | null
+}
+```
+
+
+#### Update Linux Mirror
+```http
+PUT /config/linux-mirror
+```
+
+**Request Body**
+```typescript
+{
+  linuxMirror: string | null
+}
+```
+
+
+### System Operations
+
+#### Check Updates
+```http
+PUT /update-check
+```
+
+Checks for system updates.
+
+#### Update System
+```http
+PUT /update
+```
+
+Performs system update.
+
+#### Reload System
+```http
+PUT /reload
+```
+
+**Request Body**
+```typescript
+{
+  type?: string | null
+}
+```
+
+
+#### Send Notification
+```http
+PUT /notify
+```
+
+**Request Body**
+```typescript
+{
+  title: string,
+  content: string
+}
+```
+
+
+### Command Management
+
+#### Run Command
+```http
+PUT /command-run
+```
+
+**Request Body**
+```typescript
+{
+  command: string
+}
+```
+
+**Response Headers**
+- `Content-type: application/octet-stream`
+- `QL-Task-Pid: <process_id>`
+
+#### Stop Command
+```http
+PUT /command-stop
+```
+
+**Request Body**
+```typescript
+{
+  command?: string,
+  pid?: number
+}
+```
+
+
+### Data Management
+
+#### Export Data
+```http
+PUT /data/export
+```
+
+Exports system data.
+
+#### Import Data
+```http
+PUT /data/import
+```
+
+**Request**
+- Content-Type: `multipart/form-data`
+- Field: `data` (file)
+
+### Log Management
+
+#### Get System Logs
+```http
+GET /log
+```
+
+**Query Parameters**
+```typescript
+{
+  startTime?: string,
+  endTime?: string,
+  t?: string
+}
+```
+
+
+#### Delete System Logs
+```http
+DELETE /log
+```
+
+Deletes system logs.
+
+## Error Handling
+All endpoints follow the same error handling pattern:
+- Errors are passed to the next middleware
+- Most successful responses return `{ code: 200, data: ... }`
+- Error logging is handled by Winston logger
+
+## Notes
+- All routes are protected by celebrate/Joi validation
+- File operations use async fs promises
+- Temporary files are stored in configured tmp path
+- Log files include timestamps in format: `YYYY-MM-DD-HH-mm-ss-SSS`
