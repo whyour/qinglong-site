@@ -39,3 +39,15 @@ To add an application in System Settings -> Application Settings, select module 
   }
 }
 ```
+
+## Making API Requests
+
+Use the `token` obtained above to make API requests. The base path for all module interfaces is `/open`
+
+### Request Example
+
+```bash
+curl 'http://[host]:[port]/open/env?t=1730550435755' \
+  -H 'Accept: application/json' \
+  -H 'Authorization: Bearer {token}'
+```

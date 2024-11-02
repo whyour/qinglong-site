@@ -39,3 +39,15 @@
   }
 }
 ```
+
+## 请求接口
+
+使用上面获取的 `token` 请求接口，所有模块接口的基础路径为 `/open`
+
+### 请求示例
+
+```bash
+curl 'http://[host]:[port]/open/env?t=1730550435755' \
+  -H 'Accept: application/json' \
+  -H 'Authorization: Bearer {token}'
+```
