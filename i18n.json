@@ -35,6 +35,10 @@
     "zh": "宝塔 部署",
     "en": "Baota Deploy"
   },
+  "1panel": {
+    "zh": "1Panel 部署",
+    "en": "1Panel Deploy"
+  },
   "docker": {
     "zh": "Docker 部署",
     "en": "Docker Deploy"

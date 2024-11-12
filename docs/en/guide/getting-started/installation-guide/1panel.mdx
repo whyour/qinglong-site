@@ -1,0 +1,58 @@
+import { CustomLink } from '@/components/index';
+
+# Use 1Panel for One-Click Deployment
+
+## Install 1Panel
+
+### Online Installation
+
+```shell
+# RedHat / CentOS Installation Script
+curl -sSL https://resource.fit2cloud.com/1panel/package/quick_start.sh -o quick_start.sh && sh quick_start.sh
+
+# Ubuntu Installation Script
+curl -sSL https://resource.fit2cloud.com/1panel/package/quick_start.sh -o quick_start.sh && sudo bash quick_start.sh
+
+# Debian Installation Script
+curl -sSL https://resource.fit2cloud.com/1panel/package/quick_start.sh -o quick_start.sh && bash quick_start.sh
+
+# openEuler / Others
+bash <(curl -sSL https://linuxmirrors.cn/docker.sh)
+curl -sSL https://resource.fit2cloud.com/1panel/package/quick_start.sh -o quick_start.sh && sh quick_start.sh
+```
+
+### Offline Installation
+
+> Please download the latest offline package of 1Panel, and copy it to the `/tmp` directory of the target machine. Download link for the offline package: [`https://community.fit2cloud.com/#/products/1panel/downloads`](https://community.fit2cloud.com/#/products/1panel/downloads)
+
+```shell
+cd /tmp
+# Extract the offline package (1panel-v1.10.0-lts-linux-amd64.tar.gz is an example; replace it with the actual package name)
+tar zxvf 1panel-v1.10.0-lts-linux-amd64.tar.gz
+
+# Enter the extracted directory (1panel-v1.10.0-lts-linux-amd64 is an example; replace it with the actual directory name)
+cd 1panel-v1.10.0-lts-linux-amd64
+
+# Run the installation script
+/bin/bash install.sh
+```
+
+Run the commands above to install the 1Panel.
+
+## Deployment
+
+1. Log in to the 1Panel dashboard, click `App Store` on the sidebar, find `QingLong`, and click `Install`.
+![install](/1panel/install.png)
+
+2. Set the port and basic information, choose `Enable external access to port`, and click `Confirm`.
+![install2](/1panel/install2.png)
+
+3. After installation, access it under `App Store` -> `Installed`.
+
+## Access the Dashboard
+
+- Once installation is complete, open a browser and go to the domain you just configured. You’ll be prompted to complete the initial setup.
+![initial setup](/1panel/init.png)
+
+- After completing the initial setup, log in to the panel.
+![login](/1panel/login.png)
