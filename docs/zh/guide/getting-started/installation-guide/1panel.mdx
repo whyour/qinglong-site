@@ -1,0 +1,58 @@
+import { CustomLink } from '@/components/index';
+
+# 使用 1Panel 一键部署
+
+## 安装 1Panel 面板
+
+### 在线安装
+
+```shell
+# RedHat / CentOS 安装脚本
+curl -sSL https://resource.fit2cloud.com/1panel/package/quick_start.sh -o quick_start.sh && sh quick_start.sh
+
+# Ubuntu 安装脚本
+curl -sSL https://resource.fit2cloud.com/1panel/package/quick_start.sh -o quick_start.sh && sudo bash quick_start.sh
+
+# Debian 安装脚本
+curl -sSL https://resource.fit2cloud.com/1panel/package/quick_start.sh -o quick_start.sh && bash quick_start.sh
+
+# openEuler / 其他
+bash <(curl -sSL https://linuxmirrors.cn/docker.sh)
+curl -sSL https://resource.fit2cloud.com/1panel/package/quick_start.sh -o quick_start.sh && sh quick_start.sh
+```
+
+### 离线安装
+
+> 请自行下载 1Panel 最新版本的离线包，并复制到目标机器的 `/tmp` 目录下。 离线包下载链接: [`https://community.fit2cloud.com/#/products/1panel/downloads`](https://community.fit2cloud.com/#/products/1panel/downloads)
+
+```shell
+cd /tmp
+# 解压离线包（1panel-v1.10.0-lts-linux-amd64.tar.gz 为示例离线包名称，操作时可根据实际离线包名称替换）
+tar zxvf 1panel-v1.10.0-lts-linux-amd64.tar.gz
+
+# 进入离线包目录（1panel-v1.10.0-lts-linux-amd64 为示例离线包目录名称，操作时可根据实际离线包名称替换）
+cd 1panel-v1.10.0-lts-linux-amd64
+
+# 运行安装脚本
+/bin/bash install.sh
+```
+
+执行上述命令，安装 1Panel 面板
+
+## 部署
+
+1. 登录 1Panel 面板，在侧边栏中点击 `应用商店`，找到 `青龙`，点击 `安装`
+![install](/1panel/install.png)
+
+2. 设置端口等基本信息，选择`端口外部访问`，点击 `确认`
+![install2](/1panel/install2.png)
+
+3. 安装完成后在 `应用商店` - `已安装` 中访问。
+
+## 访问面板
+
+- 安装完成后，浏览器打开刚刚设置的域名即可访问 ，访问后会提示进行初始化配置
+![登初始化配置](/1panel/init.png)
+
+- 按照提示完成面板初始化配置后登录面板
+![登录](/1panel/login.png)

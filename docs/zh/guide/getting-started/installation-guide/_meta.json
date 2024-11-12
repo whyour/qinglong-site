@@ -4,6 +4,10 @@
     "label": "baota"
   },
   {
+    "name": "1panel",
+    "label": "1panel"
+  },
+  {
     "name": "docker-compose",
     "label": "docker-compose"
   },
