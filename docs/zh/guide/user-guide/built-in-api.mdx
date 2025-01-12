@@ -1,0 +1,205 @@
+# 内置 API
+
+> 全局变量 `QLAPI` 是内置 API 的入口
+
+## 方法
+
+### 1. getEnvs
+**描述**: 获取环境列表
+
+**请求参数 (GetEnvsRequest)**
+
+| 字段 | 类型 | 必填 | 描述 |
+|-----|------|-----|------|
+| searchValue | string | 是 | 搜索关键词 |
+
+**响应 (EnvsResponse)**
+
+| 字段 | 类型 | 描述 |
+|-----|------|------|
+| code | int32 | 响应代码 |
+| data | EnvItem[] | 环境列表 |
+| message | string | 响应消息 |
+
+### 2. createEnv
+**描述**: 创建新环境
+
+**请求参数 (CreateEnvRequest)**
+
+| 字段 | 类型 | 必填 | 描述 |
+|-----|------|-----|------|
+| envs | EnvItem[] | 是 | 要创建的环境数组 |
+
+**响应 (EnvsResponse)**
+
+| 字段 | 类型 | 描述 |
+|-----|------|------|
+| code | int32 | 响应代码 |
+| data | EnvItem[] | 创建的环境列表 |
+| message | string | 响应消息 |
+
+### 3. updateEnv
+**描述**: 更新现有环境
+
+**请求参数 (UpdateEnvRequest)**
+
+| 字段 | 类型 | 必填 | 描述 |
+|-----|------|-----|------|
+| env | EnvItem | 是 | 要更新的环境 |
+
+**响应 (EnvResponse)**
+
+| 字段 | 类型 | 描述 |
+|-----|------|------|
+| code | int32 | 响应代码 |
+| data | EnvItem | 更新后的环境 |
+| message | string | 响应消息 |
+
+### 4. deleteEnvs
+**描述**: 删除指定环境
+
+**请求参数 (DeleteEnvsRequest)**
+
+| 字段 | 类型 | 必填 | 描述 |
+|-----|------|-----|------|
+| ids | int32[] | 是 | 要删除的环境 ID 数组 |
+
+**响应 (Response)**
+
+| 字段 | 类型 | 描述 |
+|-----|------|------|
+| code | int32 | 响应代码 |
+| message | string | 响应消息 |
+
+### 5. moveEnv
+**描述**: 移动环境位置
+
+**请求参数 (MoveEnvRequest)**
+
+| 字段 | 类型 | 必填 | 描述 |
+|-----|------|-----|------|
+| id | int32 | 是 | 环境 ID |
+| fromIndex | int32 | 是 | 原始位置 |
+| toIndex | int32 | 是 | 目标位置 |
+
+**响应 (EnvResponse)**
+
+| 字段 | 类型 | 描述 |
+|-----|------|------|
+| code | int32 | 响应代码 |
+| data | EnvItem | 移动后的环境 |
+| message | string | 响应消息 |
+
+### 6. disableEnvs
+**描述**: 禁用指定环境
+
+**请求参数 (DisableEnvsRequest)**
+
+| 字段 | 类型 | 必填 | 描述 |
+|-----|------|-----|------|
+| ids | int32[] | 是 | 要禁用的环境 ID 数组 |
+
+**响应 (Response)**
+
+| 字段 | 类型 | 描述 |
+|-----|------|------|
+| code | int32 | 响应代码 |
+| message | string | 响应消息 |
+
+### 7. enableEnvs
+**描述**: 启用指定环境
+
+**请求参数 (EnableEnvsRequest)**
+
+| 字段 | 类型 | 必填 | 描述 |
+|-----|------|-----|------|
+| ids | int32[] | 是 | 要启用的环境 ID 数组 |
+
+**响应 (Response)**
+
+| 字段 | 类型 | 描述 |
+|-----|------|------|
+| code | int32 | 响应代码 |
+| message | string | 响应消息 |
+
+### 8. updateEnvNames
+**描述**: 更新指定环境的名称
+
+**请求参数 (UpdateEnvNamesRequest)**
+
+| 字段 | 类型 | 必填 | 描述 |
+|-----|------|-----|------|
+| ids | int32[] | 是 | 环境 ID 数组 |
+| name | string | 是 | 要设置的新名称 |
+
+**响应 (Response)**
+
+| 字段 | 类型 | 描述 |
+|-----|------|------|
+| code | int32 | 响应代码 |
+| message | string | 响应消息 |
+
+### 9. getEnvById
+**描述**: 通过 ID 获取环境
+
+**请求参数 (GetEnvByIdRequest)**
+
+| 字段 | 类型 | 必填 | 描述 |
+|-----|------|-----|------|
+| id | int32 | 是 | 环境 ID |
+
+**响应 (EnvResponse)**
+
+| 字段 | 类型 | 描述 |
+|-----|------|------|
+| code | int32 | 响应代码 |
+| data | EnvItem | 环境详情 |
+| message | string | 响应消息 |
+
+### 10. systemNotify
+**描述**: 发送系统通知
+
+**请求参数 (SystemNotifyRequest)**
+
+| 字段 | 类型 | 必填 | 描述 |
+|-----|------|-----|------|
+| title | string | 是 | 通知标题 |
+| content | string | 是 | 通知内容 |
+
+**响应 (Response)**
+
+| 字段 | 类型 | 描述 |
+|-----|------|------|
+| code | int32 | 响应代码 |
+| message | string | 响应消息 |
+
+## 数据结构
+
+### EnvItem
+
+| 字段 | 类型 | 必填 | 描述 |
+|-----|------|-----|------|
+| id | int32 | 否 | 环境 ID |
+| name | string | 否 | 环境名称 |
+| value | string | 否 | 环境值 |
+| remarks | string | 否 | 备注 |
+| status | int32 | 否 | 状态 |
+| position | int32 | 否 | 位置 |
+
+## 调用示例
+
+```javascript
+// 获取环境列表
+QLAPI.getEnvs({ searchValue: 'dddd' }).then((x) => {
+  console.log('getEnvs', x);
+});
+```
+
+```python
+# 获取环境列表
+print(QLAPI.getEnvs({ "searchValue": "dddd" }))
+```
+
+## 注意事项
+- proto 文件中标记为 `optional` 的字段可能为 null 或未定义
+- 响应中的 `code` 字段表示操作结果状态

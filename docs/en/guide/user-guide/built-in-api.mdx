@@ -1,0 +1,206 @@
+
+# Built-in API
+
+> The global variable `QLAPI` is the entry point for built-in APIs
+
+## Methods
+
+### 1. getEnvs
+**Description**: Retrieves a list of environments
+
+**Request (GetEnvsRequest)**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| searchValue | string | Yes | Search keyword |
+
+**Response (EnvsResponse)**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| code | int32 | Response code |
+| data | EnvItem[] | Environment list |
+| message | string | Response message |
+
+### 2. createEnv
+**Description**: Creates new environments
+
+**Request (CreateEnvRequest)**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| envs | EnvItem[] | Yes | Array of environments to create |
+
+**Response (EnvsResponse)**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| code | int32 | Response code |
+| data | EnvItem[] | Created environments |
+| message | string | Response message |
+
+### 3. updateEnv
+**Description**: Updates an existing environment
+
+**Request (UpdateEnvRequest)**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| env | EnvItem | Yes | Environment to update |
+
+**Response (EnvResponse)**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| code | int32 | Response code |
+| data | EnvItem | Updated environment |
+| message | string | Response message |
+
+### 4. deleteEnvs
+**Description**: Deletes specified environments
+
+**Request (DeleteEnvsRequest)**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| ids | int32[] | Yes | Array of environment IDs to delete |
+
+**Response (Response)**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| code | int32 | Response code |
+| message | string | Response message |
+
+### 5. moveEnv
+**Description**: Moves an environment to a different position
+
+**Request (MoveEnvRequest)**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| id | int32 | Yes | Environment ID |
+| fromIndex | int32 | Yes | Original position |
+| toIndex | int32 | Yes | Target position |
+
+**Response (EnvResponse)**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| code | int32 | Response code |
+| data | EnvItem | Moved environment |
+| message | string | Response message |
+
+### 6. disableEnvs
+**Description**: Disables specified environments
+
+**Request (DisableEnvsRequest)**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| ids | int32[] | Yes | Array of environment IDs to disable |
+
+**Response (Response)**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| code | int32 | Response code |
+| message | string | Response message |
+
+### 7. enableEnvs
+**Description**: Enables specified environments
+
+**Request (EnableEnvsRequest)**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| ids | int32[] | Yes | Array of environment IDs to enable |
+
+**Response (Response)**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| code | int32 | Response code |
+| message | string | Response message |
+
+### 8. updateEnvNames
+**Description**: Updates names for specified environments
+
+**Request (UpdateEnvNamesRequest)**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| ids | int32[] | Yes | Array of environment IDs |
+| name | string | Yes | New name to set |
+
+**Response (Response)**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| code | int32 | Response code |
+| message | string | Response message |
+
+### 9. getEnvById
+**Description**: Retrieves an environment by its ID
+
+**Request (GetEnvByIdRequest)**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| id | int32 | Yes | Environment ID |
+
+**Response (EnvResponse)**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| code | int32 | Response code |
+| data | EnvItem | Environment details |
+| message | string | Response message |
+
+### 10. systemNotify
+**Description**: Sends system notifications
+
+**Request (SystemNotifyRequest)**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| title | string | Yes | Notification title |
+| content | string | Yes | Notification content |
+
+**Response (Response)**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| code | int32 | Response code |
+| message | string | Response message |
+
+## Data Structures
+
+### EnvItem
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| id | int32 | No | Environment ID |
+| name | string | No | Environment name |
+| value | string | No | Environment value |
+| remarks | string | No | Remarks |
+| status | int32 | No | Status |
+| position | int32 | No | Position |
+
+## Usage Examples
+
+```javascript
+// Get environment list
+QLAPI.getEnvs({ searchValue: 'dddd' }).then((x) => {
+  console.log('getEnvs', x);
+});
+```
+
+```python
+# Get environment list
+print(QLAPI.getEnvs({ "searchValue": "dddd" }))
+```
+
+## Notes
+- All fields marked as `optional` in the proto file may be null or undefined
+- The `code` field in responses indicates the operation result status
