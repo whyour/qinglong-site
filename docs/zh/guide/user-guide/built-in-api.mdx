@@ -5,7 +5,7 @@
 ## 方法
 
 ### 1. getEnvs
-**描述**: 获取环境列表
+**描述**: 获取环境变量列表
 
 **请求参数 (GetEnvsRequest)**
 
@@ -18,11 +18,11 @@
 | 字段 | 类型 | 描述 |
 |-----|------|------|
 | code | int32 | 响应代码 |
-| data | EnvItem[] | 环境列表 |
+| data | EnvItem[] | 环境变量列表 |
 | message | string | 响应消息 |
 
 ### 2. createEnv
-**描述**: 创建新环境
+**描述**: 创建新环境变量
 
 **请求参数 (CreateEnvRequest)**
 
@@ -39,7 +39,7 @@
 | message | string | 响应消息 |
 
 ### 3. updateEnv
-**描述**: 更新现有环境
+**描述**: 更新现有环境变量
 
 **请求参数 (UpdateEnvRequest)**
 
@@ -56,7 +56,7 @@
 | message | string | 响应消息 |
 
 ### 4. deleteEnvs
-**描述**: 删除指定环境
+**描述**: 删除指定环境变量
 
 **请求参数 (DeleteEnvsRequest)**
 
@@ -72,7 +72,7 @@
 | message | string | 响应消息 |
 
 ### 5. moveEnv
-**描述**: 移动环境位置
+**描述**: 移动环境变量位置
 
 **请求参数 (MoveEnvRequest)**
 
@@ -91,7 +91,7 @@
 | message | string | 响应消息 |
 
 ### 6. disableEnvs
-**描述**: 禁用指定环境
+**描述**: 禁用指定环境变量
 
 **请求参数 (DisableEnvsRequest)**
 
@@ -107,7 +107,7 @@
 | message | string | 响应消息 |
 
 ### 7. enableEnvs
-**描述**: 启用指定环境
+**描述**: 启用指定环境变量
 
 **请求参数 (EnableEnvsRequest)**
 
@@ -123,7 +123,7 @@
 | message | string | 响应消息 |
 
 ### 8. updateEnvNames
-**描述**: 更新指定环境的名称
+**描述**: 更新指定环境变量的名称
 
 **请求参数 (UpdateEnvNamesRequest)**
 
@@ -140,7 +140,7 @@
 | message | string | 响应消息 |
 
 ### 9. getEnvById
-**描述**: 通过 ID 获取环境
+**描述**: 通过 ID 获取环境变量
 
 **请求参数 (GetEnvByIdRequest)**
 
@@ -179,9 +179,9 @@
 
 | 字段 | 类型 | 必填 | 描述 |
 |-----|------|-----|------|
-| id | int32 | 否 | 环境 ID |
-| name | string | 否 | 环境名称 |
-| value | string | 否 | 环境值 |
+| id | int32 | 否 | 环境变量 ID |
+| name | string | 否 | 环境变量名称 |
+| value | string | 否 | 环境变量值 |
 | remarks | string | 否 | 备注 |
 | status | int32 | 否 | 状态 |
 | position | int32 | 否 | 位置 |
