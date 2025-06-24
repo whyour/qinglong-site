@@ -166,6 +166,78 @@
 |-------|------|----------|-------------|
 | title | string | Yes | Notification title |
 | content | string | Yes | Notification content |
+| notificationInfo | object | No | Optional notification configuration (uses system default if not provided) |
+
+#### notificationInfo Sub-fields
+| Field | Type | Description |
+|-------|------|-------------|
+| type | NotificationMode | Notification method type (enum values, see description below) |
+| gotifyUrl | string | Gotify notification (effective when type=gotify): Gotify service address (e.g., http://localhost:8080) |
+| gotifyToken | string | Gotify notification (effective when type=gotify): Gotify application token (required) |
+| gotifyPriority | number | Gotify notification (effective when type=gotify): Message priority (0-10, default 5) |
+| goCqHttpBotUrl | string | Go-CQHttp QQ bot (effective when type=goCqHttpBot): Go-CQHttp service address (e.g., http://localhost:5700) |
+| goCqHttpBotToken | string | Go-CQHttp QQ bot (effective when type=goCqHttpBot): Access token (configured access_token) |
+| goCqHttpBotQq | string | Go-CQHttp QQ bot (effective when type=goCqHttpBot): Target QQ number (group number or friend QQ) |
+| serverChanKey | string | ServerChan (effective when type=serverChan): ServerChan key (string starting with SC) |
+| pushDeerKey | string | PushDeer (effective when type=pushDeer): PushDeer key (string starting with pd) |
+| pushDeerUrl | string | PushDeer (effective when type=pushDeer): Self-hosted PushDeer service address (default: https://api2.pushdeer.com) |
+| barkPush | string | Bark (effective when type=bark): Bark device identifier (e.g., abc123) |
+| barkIcon | string | Bark (effective when type=bark): Message icon URL (optional, system default icon by default) |
+| barkSound | string | Bark (effective when type=bark): Notification sound (e.g., alert, optional) |
+| barkGroup | string | Bark (effective when type=bark): Message group (optional) |
+| barkLevel | string | Bark (effective when type=bark): Message level (active/timeSensitive/passive) |
+| barkUrl | string | Bark (effective when type=bark): Self-hosted Bark service address (default: https://api.day.app) |
+| barkArchive | string | Bark (effective when type=bark): Whether to archive (true/false, default false) |
+| telegramBotToken | string | Telegram bot (effective when type=telegramBot): Telegram bot token (format: botXXX:XXX) |
+| telegramBotUserId | string | Telegram bot (effective when type=telegramBot): Target user ID (numeric format) |
+| telegramBotProxyHost | string | Telegram bot (effective when type=telegramBot): Proxy host (if needed) |
+| telegramBotProxyPort | string | Telegram bot (effective when type=telegramBot): Proxy port (if needed) |
+| telegramBotProxyAuth | string | Telegram bot (effective when type=telegramBot): Proxy authentication info (user:pass) |
+| telegramBotApiHost | string | Telegram bot (effective when type=telegramBot): Custom API address (default: api.telegram.org) |
+| dingtalkBotToken | string | DingTalk bot (effective when type=dingtalkBot): DingTalk bot token (access_token in webhook) |
+| dingtalkBotSecret | string | DingTalk bot (effective when type=dingtalkBot): Signing secret (required when signing is enabled) |
+| weWorkBotKey | string | WeCom bot (effective when type=weWorkBot): WeCom bot webhook key (key=XXX) |
+| weWorkOrigin | string | WeCom bot (effective when type=weWorkBot): WeCom server address (default: https://qyapi.weixin.qq.com) |
+| weWorkAppKey | string | WeCom app (effective when type=weWorkApp): WeCom app credential (e.g., combination of corpid+corpsecret) |
+| aibotkKey | string | Aibotk (effective when type=aibotk): Aibotk key |
+| aibotkType | string | Aibotk (effective when type=aibotk): Bot type (e.g., wechat) |
+| aibotkName | string | Aibotk (effective when type=aibotk): Bot name |
+| iGotPushKey | string | iGot (effective when type=iGot): iGot push key (format: igot-XXX) |
+| pushPlusToken | string | PushPlus (effective when type=pushPlus): PushPlus token (required) |
+| pushPlusUser | string | PushPlus (effective when type=pushPlus): Target user ID (current user by default) |
+| pushPlusTemplate | string | PushPlus (effective when type=pushPlus): Message template (e.g., html/json) |
+| pushplusChannel | string | PushPlus (effective when type=pushPlus): Push channel (e.g., wechat/email) |
+| pushplusWebhook | string | PushPlus (effective when type=pushPlus): Custom webhook address |
+| pushplusCallbackUrl | string | PushPlus (effective when type=pushPlus): Callback address |
+| pushplusTo | string | PushPlus (effective when type=pushPlus): Target users (comma-separated for multiple) |
+| wePlusBotToken | string | WePlus bot (effective when type=wePlusBot): WePlus bot token |
+| wePlusBotReceiver | string | WePlus bot (effective when type=wePlusBot): Receiver ID |
+| wePlusBotVersion | string | WePlus bot (effective when type=wePlusBot): API version (e.g., v1) |
+| emailService | string | Email notification (effective when type=email): Email service (e.g., QQ/163/Gmail) |
+| emailUser | string | Email notification (effective when type=email): Sender email (e.g., user@example.com) |
+| emailPass | string | Email notification (effective when type=email): Email authorization code (not login password) |
+| emailTo | string | Email notification (effective when type=email): Recipient email (comma-separated for multiple) |
+| pushMeKey | string | PushMe (effective when type=pushMe): PushMe key |
+| pushMeUrl | string | PushMe (effective when type=pushMe): Self-hosted PushMe service address |
+| larkKey | string | Feishu (effective when type=feishu): Feishu bot webhook key (needs to be configured in Feishu backend) |
+| webhookHeaders | string | Webhook (effective when type=webhook): Request headers (JSON format string) |
+| webhookBody | string | Webhook (effective when type=webhook): Request body content (supports template variables) |
+| webhookUrl | string | Webhook (effective when type=webhook): Webhook address (required) |
+| webhookMethod | string | Webhook (effective when type=webhook): Request method (GET/POST/PUT, etc., default POST) |
+| webhookContentType | string | Webhook (effective when type=webhook): Content type (e.g., application/json) |
+| chronocatURL | string | Chronocat (effective when type=Chronocat): Chronocat service address (e.g., http://localhost:10086) |
+| chronocatQQ | string | Chronocat (effective when type=Chronocat): Target QQ number |
+| chronocatToken | string | Chronocat (effective when type=Chronocat): Access token |
+| ntfyUrl | string | Ntfy (effective when type=ntfy): Ntfy service address (default: https://ntfy.sh) |
+| ntfyTopic | string | Ntfy (effective when type=ntfy): Topic name (required) |
+| ntfyPriority | string | Ntfy (effective when type=ntfy): Priority (low/default/high/urgent) |
+| ntfyToken | string | Ntfy (effective when type=ntfy): Authentication token (if needed) |
+| ntfyUsername | string | Ntfy (effective when type=ntfy): Username (if needed) |
+| ntfyPassword | string | Ntfy (effective when type=ntfy): Password (if needed) |
+| ntfyActions | string | Ntfy (effective when type=ntfy): Action buttons (JSON format) |
+| wxPusherBotAppToken | string | WeChat push bot (effective when type=wxPusherBot): WeChat push app token (required) |
+| wxPusherBotTopicIds | string | WeChat push bot (effective when type=wxPusherBot): Topic IDs (comma-separated for multiple) |
+| wxPusherBotUids | string | WeChat push bot (effective when type=wxPusherBot): User UIDs (comma-separated for multiple) |
 
 **Response (Response)**
 
@@ -175,6 +247,33 @@
 | message | string | Response message |
 
 ## Data Structures
+
+### NotificationMode
+Notification method type enum values:
+
+| Enum Value | Description |
+|------------|-------------|
+| gotify | Gotify notification |
+| goCqHttpBot | Go-CQHttp QQ bot |
+| serverChan | ServerChan |
+| pushDeer | PushDeer |
+| bark | Bark |
+| chat | Generic chat notification |
+| telegramBot | Telegram bot |
+| dingtalkBot | DingTalk bot |
+| weWorkBot | WeCom bot |
+| weWorkApp | WeCom app |
+| aibotk | Aibotk notification |
+| iGot | iGot push |
+| pushPlus | PushPlus push |
+| wePlusBot | WePlus bot |
+| email | Email notification |
+| pushMe | PushMe push |
+| feishu | Feishu notification |
+| webhook | Webhook notification |
+| chronocat | Chronocat notification |
+| ntfy | Ntfy notification |
+| wxPusherBot | WeChat push bot |
 
 ### EnvItem
 

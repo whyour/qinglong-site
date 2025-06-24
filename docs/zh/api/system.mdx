@@ -152,8 +152,141 @@ PUT /notify
 **请求体**
 ```typescript
 {
-  title: string,    // 通知标题
-  content: string   // 通知内容
+  title: string,                // 通知标题（必填）
+  content: string,              // 通知内容（必填）
+  notificationInfo?: {          // 可选通知配置（不填则使用系统默认配置）
+    type: NotificationMode,     // 通知方式类型（枚举值，见下文说明）
+    
+    // Gotify 通知（type=gotify）
+    gotifyUrl?: string,         // Gotify 服务地址（如：http://localhost:8080）
+    gotifyToken?: string,       // Gotify 应用令牌（必填）
+    gotifyPriority?: number,    // 消息优先级（0-10，默认5）
+    
+    // Go-CQHttp QQ 机器人（type=goCqHttpBot）
+    goCqHttpBotUrl?: string,    // Go-CQHttp 服务地址（如：http://localhost:5700）
+    goCqHttpBotToken?: string,  // 访问令牌（配置的 access_token）
+    goCqHttpBotQq?: string,     // 目标 QQ 号（群号或好友QQ）
+    
+    // Server 酱（type=serverChan）
+    serverChanKey?: string,     // Server 酱密钥（SC开头的字符串）
+    
+    // PushDeer（type=pushDeer）
+    pushDeerKey?: string,       // PushDeer 密钥（pd开头的字符串）
+    pushDeerUrl?: string,       // 自建 PushDeer 服务地址（默认：https://api2.pushdeer.com）
+    
+    // Bark（type=bark）
+    barkPush?: string,          // Bark 设备标识（如：abc123）
+    barkIcon?: string,          // 消息图标 URL（可选，默认系统图标）
+    barkSound?: string,         // 提示音（如：alert，可选）
+    barkGroup?: string,         // 消息分组（可选）
+    barkLevel?: string,         // 消息级别（active/timeSensitive/passive）
+    barkUrl?: string,           // 自建 Bark 服务地址（默认：https://api.day.app）
+    barkArchive?: string,       // 是否存档（true/false，默认false）
+    
+    // Telegram 机器人（type=telegramBot）
+    telegramBotToken?: string,  // Telegram Bot 令牌（botXXX:XXX 格式）
+    telegramBotUserId?: string, // 目标用户 ID（数字形式）
+    telegramBotProxyHost?: string, // 代理主机（如需要）
+    telegramBotProxyPort?: string, // 代理端口（如需要）
+    telegramBotProxyAuth?: string, // 代理认证信息（user:pass）
+    telegramBotApiHost?: string,  // 自定义 API 地址（默认：api.telegram.org）
+    
+    // 钉钉机器人（type=dingtalkBot）
+    dingtalkBotToken?: string,  // 钉钉机器人令牌（webhook 中的 access_token）
+    dingtalkBotSecret?: string, // 加签密钥（启用加签时必填）
+    
+    // 企业微信机器人（type=weWorkBot）
+    weWorkBotKey?: string,      // 企业微信机器人 Webhook 密钥（key=XXX）
+    weWorkOrigin?: string,      // 企业微信服务器地址（默认：https://qyapi.weixin.qq.com）
+    
+    // 企业微信应用（type=weWorkApp）
+    weWorkAppKey?: string,      // 企业微信应用凭证（如：corpid+corpsecret 组合）
+    
+    // Aibotk（type=aibotk）
+    aibotkKey?: string,         // Aibotk 密钥
+    aibotkType?: string,        // 机器人类型（如：wechat）
+    aibotkName?: string,        // 机器人名称
+    
+    // iGot（type=iGot）
+    iGotPushKey?: string,       // iGot 推送密钥（igot-XXX 格式）
+    
+    // PushPlus（type=pushPlus）
+    pushPlusToken?: string,     // PushPlus 令牌（必填）
+    pushPlusUser?: string,      // 目标用户 ID（默认当前用户）
+    pushPlusTemplate?: string,  // 消息模板（如：html/json）
+    pushplusChannel?: string,   // 推送渠道（如：wechat/email）
+    pushplusWebhook?: string,   // 自定义 Webhook 地址
+    pushplusCallbackUrl?: string, // 回调地址
+    pushplusTo?: string,        // 目标用户（多个用逗号分隔）
+    
+    // WePlus 机器人（type=wePlusBot）
+    wePlusBotToken?: string,    // WePlus 机器人令牌
+    wePlusBotReceiver?: string, // 接收者 ID
+    wePlusBotVersion?: string,  // 接口版本（如：v1）
+    
+    // 邮件通知（type=email）
+    emailService?: string,      // 邮件服务（如：QQ/163/Gmail）
+    emailUser?: string,         // 发件人邮箱（如：user@example.com）
+    emailPass?: string,         // 邮箱授权码（非登录密码）
+    emailTo?: string,           // 收件人邮箱（多个用逗号分隔）
+    
+    // PushMe（type=pushMe）
+    pushMeKey?: string,         // PushMe 密钥
+    pushMeUrl?: string,         // 自建 PushMe 服务地址
+    
+    // 飞书（type=feishu）
+    larkKey?: string,           // 飞书机器人 Webhook 密钥（需要去飞书后台配置）
+    
+    // Webhook（type=webhook）
+    webhookHeaders?: string,    // 请求头（JSON 格式字符串）
+    webhookBody?: string,       // 请求体内容（支持模板变量）
+    webhookUrl?: string,        // Webhook 地址（必填）
+    webhookMethod?: string,     // 请求方法（GET/POST/PUT 等，默认POST）
+    webhookContentType?: string, // 内容类型（如：application/json）
+    
+    // Chronocat（type=Chronocat）
+    chronocatURL?: string,      // Chronocat 服务地址（如：http://localhost:10086）
+    chronocatQQ?: string,       // 目标 QQ 号
+    chronocatToken?: string,    // 访问令牌
+    
+    // Ntfy（type=ntfy）
+    ntfyUrl?: string,           // Ntfy 服务地址（默认：https://ntfy.sh）
+    ntfyTopic?: string,         // 主题名称（必填）
+    ntfyPriority?: string,      // 优先级（low/default/high/urgent）
+    ntfyToken?: string,         // 认证令牌（如需要）
+    ntfyUsername?: string,      // 用户名（如需要）
+    ntfyPassword?: string,      // 密码（如需要）
+    ntfyActions?: string,       // 操作按钮（JSON 格式）
+    
+    // 微信推送机器人（type=wxPusherBot）
+    wxPusherBotAppToken?: string, // 微信推送应用 Token（必填）
+    wxPusherBotTopicIds?: string, // 主题 ID（多个用逗号分隔）
+    wxPusherBotUids?: string,    // 用户 UID（多个用逗号分隔）
+  }
+}
+```mdx
+enum NotificationMode {
+  'gotify' = 'gotify',
+  'goCqHttpBot' = 'goCqHttpBot',
+  'serverChan' = 'serverChan',
+  'pushDeer' = 'pushDeer',
+  'bark' = 'bark',
+  'chat' = 'chat',
+  'telegramBot' = 'telegramBot',
+  'dingtalkBot' = 'dingtalkBot',
+  'weWorkBot' = 'weWorkBot',
+  'weWorkApp' = 'weWorkApp',
+  'aibotk' = 'aibotk',
+  'iGot' = 'iGot',
+  'pushPlus' = 'pushPlus',
+  'wePlusBot' = 'wePlusBot',
+  'email' = 'email',
+  'pushMe' = 'pushMe',
+  'feishu' = 'feishu',
+  'webhook' = 'webhook',
+  'chronocat' = 'Chronocat',
+  'ntfy' = 'ntfy',
+  'wxPusherBot' = 'wxPusherBot',
 }
 ```
 

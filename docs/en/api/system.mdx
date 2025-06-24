@@ -152,8 +152,142 @@ PUT /notify
 **Request Body**
 ```typescript
 {
-  title: string,
-  content: string
+  title: string,                // Notification title (Required)
+  content: string,              // Notification content (Required)
+  notificationInfo?: {          // Optional notification configuration
+    type: NotificationMode,     // Notification channel type (enum values, see below)
+    
+    // Gotify (type=gotify)
+    gotifyUrl?: string,         // Gotify server address (e.g., http://localhost:8080)
+    gotifyToken?: string,       // Gotify application token (Required)
+    gotifyPriority?: number,    // Message priority (0-10, default: 5)
+    
+    // Go-CQHttp Bot (type=goCqHttpBot)
+    goCqHttpBotUrl?: string,    // Go-CQHttp server address (e.g., http://localhost:5700)
+    goCqHttpBotToken?: string,  // Access token (configured access_token)
+    goCqHttpBotQq?: string,     // Target QQ number (group/individual QQ)
+    
+    // ServerChan (type=serverChan)
+    serverChanKey?: string,     // ServerChan key (starts with SC-)
+    
+    // PushDeer (type=pushDeer)
+    pushDeerKey?: string,       // PushDeer key (starts with pd-)
+    pushDeerUrl?: string,       // Self-hosted PushDeer server address (default: https://api2.pushdeer.com)
+    
+    // Bark (type=bark)
+    barkPush?: string,          // Bark device identifier (e.g., abc123)
+    barkIcon?: string,          // Message icon URL (optional, default: system icon)
+    barkSound?: string,         // Notification sound (e.g., alert, optional)
+    barkGroup?: string,         // Message group (optional)
+    barkLevel?: string,         // Message level (active/timeSensitive/passive)
+    barkUrl?: string,           // Self-hosted Bark server address (default: https://api.day.app)
+    barkArchive?: string,       // Whether to archive (true/false, default: false)
+    
+    // Telegram Bot (type=telegramBot)
+    telegramBotToken?: string,  // Telegram Bot token (format: botXXX:XXX)
+    telegramBotUserId?: string, // Target user ID (numeric)
+    telegramBotProxyHost?: string, // Proxy host (if needed)
+    telegramBotProxyPort?: string, // Proxy port (if needed)
+    telegramBotProxyAuth?: string, // Proxy authentication (user:pass)
+    telegramBotApiHost?: string,  // Custom API address (default: api.telegram.org)
+    
+    // DingTalk Bot (type=dingtalkBot)
+    dingtalkBotToken?: string,  // DingTalk Bot token (access_token in webhook)
+    dingtalkBotSecret?: string, // Signing secret (required if signing is enabled)
+    
+    // WeCom Bot (type=weWorkBot)
+    weWorkBotKey?: string,      // WeCom Bot webhook key (key=XXX)
+    weWorkOrigin?: string,      // WeCom server address (default: https://qyapi.weixin.qq.com)
+    
+    // WeCom App (type=weWorkApp)
+    weWorkAppKey?: string,      // WeCom app credentials (e.g., corpid+corpsecret)
+    
+    // Aibotk (type=aibotk)
+    aibotkKey?: string,         // Aibotk key
+    aibotkType?: string,        // Bot type (e.g., wechat)
+    aibotkName?: string,        // Bot name
+    
+    // iGot (type=iGot)
+    iGotPushKey?: string,       // iGot push key (format: igot-XXX)
+    
+    // PushPlus (type=pushPlus)
+    pushPlusToken?: string,     // PushPlus token (Required)
+    pushPlusUser?: string,      // Target user ID (default: current user)
+    pushPlusTemplate?: string,  // Message template (e.g., html/json)
+    pushplusChannel?: string,   // Push channel (e.g., wechat/email)
+    pushplusWebhook?: string,   // Custom webhook address
+    pushplusCallbackUrl?: string, // Callback URL
+    pushplusTo?: string,        // Target users (comma-separated for multiple)
+    
+    // WePlus Bot (type=wePlusBot)
+    wePlusBotToken?: string,    // WePlus Bot token
+    wePlusBotReceiver?: string, // Receiver ID
+    wePlusBotVersion?: string,  // API version (e.g., v1)
+    
+    // Email (type=email)
+    emailService?: string,      // Email service (e.g., QQ/163/Gmail)
+    emailUser?: string,         // Sender email (e.g., user@example.com)
+    emailPass?: string,         // Email authorization code (not login password)
+    emailTo?: string,           // Recipient email(s) (comma-separated for multiple)
+    
+    // PushMe (type=pushMe)
+    pushMeKey?: string,         // PushMe key
+    pushMeUrl?: string,         // Self-hosted PushMe server address
+    
+    // Feishu (type=feishu)
+    larkKey?: string,           // Feishu Bot webhook key (needs to be configured in Feishu backend)
+    
+    // Webhook (type=webhook)
+    webhookHeaders?: string,    // Request headers (JSON string)
+    webhookBody?: string,       // Request body (supports template variables)
+    webhookUrl?: string,        // Webhook address (Required)
+    webhookMethod?: string,     // Request method (GET/POST/PUT, etc., default: POST)
+    webhookContentType?: string, // Content type (e.g., application/json)
+    
+    // Chronocat (type=Chronocat)
+    chronocatURL?: string,      // Chronocat server address (e.g., http://localhost:10086)
+    chronocatQQ?: string,       // Target QQ number
+    chronocatToken?: string,    // Access token
+    
+    // Ntfy (type=ntfy)
+    ntfyUrl?: string,           // Ntfy server address (default: https://ntfy.sh)
+    ntfyTopic?: string,         // Topic name (Required)
+    ntfyPriority?: string,      // Priority (low/default/high/urgent)
+    ntfyToken?: string,         // Authentication token (if needed)
+    ntfyUsername?: string,      // Username (if needed)
+    ntfyPassword?: string,      // Password (if needed)
+    ntfyActions?: string,       // Action buttons (JSON format)
+    
+    // WxPusher Bot (type=wxPusherBot)
+    wxPusherBotAppToken?: string, // WxPusher app token (Required)
+    wxPusherBotTopicIds?: string, // Topic IDs (comma-separated for multiple)
+    wxPusherBotUids?: string,    // User UIDs (comma-separated for multiple)
+  }
+}
+```
+```typescript
+enum NotificationMode {
+  gotify = 'gotify',
+  goCqHttpBot = 'goCqHttpBot',
+  serverChan = 'serverChan',
+  pushDeer = 'pushDeer',
+  bark = 'bark',
+  chat = 'chat',
+  telegramBot = 'telegramBot',
+  dingtalkBot = 'dingtalkBot',
+  weWorkBot = 'weWorkBot',
+  weWorkApp = 'weWorkApp',
+  aibotk = 'aibotk',
+  iGot = 'iGot',
+  pushPlus = 'pushPlus',
+  wePlusBot = 'wePlusBot',
+  email = 'email',
+  pushMe = 'pushMe',
+  feishu = 'feishu',
+  webhook = 'webhook',
+  chronocat = 'Chronocat',
+  ntfy = 'ntfy',
+  wxPusherBot = 'wxPusherBot',
 }
 ```
 
