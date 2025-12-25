@@ -13,7 +13,7 @@ hero:
       link: /guide/getting-started/installation-guide
     - theme: alt
       text: Demo
-      link: http://demo.ninesix.cc:4433/
+      link: http://demo.qinglong.online:4433/
   image:
     src: https://qn.whyour.cn/logo.png
     alt: Qinglong Logo
