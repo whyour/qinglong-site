@@ -30,7 +30,7 @@ export default defineConfig({
   themeConfig: {
     enableContentAnimation: true,
     footer: {
-      message: "© 2024 Qinglong Inc. All Rights Reserved.",
+      message: "<p>© 2026 Qinglong Inc. All Rights Reserved.<a href='https://beian.miit.gov.cn/' style='margin-left: 4px' target='_blank'>京ICP备19049168号-4</a></p>",
     },
     hideNavbar: "auto",
     socialLinks: [
