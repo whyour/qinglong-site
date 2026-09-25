@@ -1,0 +1,74 @@
+# Panel-internal tools
+
+Develop includes TypeScript tools for local script execution and maintenance, delivered with the panel source and internal build. They use a separate command tree from the [remote npm CLI](./cli) and must run on the actual panel host or inside its container. They require Node.js 22.12 or newer, Bash and the interpreters required by your tasks.
+
+## Build and run
+
+From the Qinglong source directory:
+
+```bash
+npm ci --prefix cli
+npm run build:cli
+node cli/dist/ql.js --help
+```
+
+These examples assume the panel is installed at `/ql` and contains the built `cli/dist` directory:
+
+```bash
+node /ql/cli/dist/ql.js task exec --root /ql demo.js now
+node /ql/cli/dist/ql.js reload --root /ql
+# The build must exist inside the container
+docker exec qinglong node /ql/cli/dist/ql.js task exec --root /ql demo.js now
+```
+
+A mounted `data` directory alone is not a complete runtime. These commands cannot be executed through the npm CLI on a workstation.
+
+## Select the internal entrypoints
+
+The original [Shell commands](./basic-explanation) remain the default. On panels with the entrypoint loader, set this variable in the panel's startup environment:
+
+```bash
+export QL_CLI_ROOT=/absolute/path/to/qinglong/cli
+```
+
+The absolute path must contain the **complete internal `dist`** directory, not the `@whyour/qinglong-cli` npm package. After restarting, the loader creates private `ql/task/crontab` wrappers in the runtime user's `~/bin` and prioritizes them for panel child processes. Independent terminals can explicitly invoke `~/bin/ql`. For Docker, configure the variable in the container environment and recreate the container. Invalid paths fail without silent fallback.
+
+Unset the variable and restart to restore Shell entrypoints. Build the internal tools before selecting them.
+
+## Commands
+
+Here, `ql` means the selected internal entrypoint; you can also use `node /ql/cli/dist/ql.js`.
+
+| Purpose | Command |
+| --- | --- |
+| Execute a script | `ql task exec [options] [script]` |
+| Synchronize a repository | `ql repo <url> [include] [exclude] [dependencies] [branch] [extensions] [proxy] [autoAdd] [autoDelete]` |
+| Download a single file | `ql raw <url> [proxy] [autoAdd] [autoDelete]` |
+| Start | `ql start` |
+| Repair configuration | `ql repair-config` |
+| Check and repair the environment | `ql check` |
+| Update | `ql update [--mirror github\|gitee] [--download-only]` |
+| Reload | `ql reload [--target services\|system\|data]` |
+| Remove old logs | `ql rmlog <days>` |
+| Run extension script / Bot | `ql extra` / `ql bot` |
+| Reset login errors / two-factor authentication | `ql resetlet` / `ql resettfa` |
+| Reset password / username | `ql resetpwd -- <value>` / `ql resetname -- <value>` |
+
+`check` installs dependencies, repairs configuration and reloads services. `reload` restarts services by default; `system/data` applies staged files. `start --no-startup` skips OS startup registration, while `start --reload` skips dependency installation, optional hooks and startup registration.
+
+Place maintenance options `--root`, `--data-dir` and `--json` before `--`. Password positionals are visible in process arguments; use a trusted terminal. `repo/raw` uses `QL_DIR/QL_DATA_DIR` and does not accept `--root/--json`. Repository filters use POSIX extended regular expressions through `grep -E`.
+
+## Script arguments and compatibility
+
+```bash
+# Put runner options before the script
+node /ql/cli/dist/ql.js task exec --root /ql demo.js now
+# Arguments after -- go to the script
+node /ql/cli/dist/ql.js task exec --root /ql demo.js -- --mode daily
+```
+
+`now` skips random delay; `conc` and `desi` support account selection. Configuration and hooks remain Bash. With `--json`, script output goes to stderr and the final result goes to stdout, preserving the script exit code.
+
+Compatibility forms include `ql task <script>`, `task <script>` and `ql local <command>`. Use explicit `task exec` for scripts named like API actions. With `QL_DIR` configured, bare `ql task` or `task` lists JavaScript scripts. `update false` means `--download-only`; `reload system/data/services` maps to `--target`.
+
+Sources and full reference: [internal tools](https://github.com/whyour/qinglong/blob/master/cli/LOCAL.en.md), [local Skill](https://github.com/whyour/qinglong/tree/master/cli/skills/qinglong-local).

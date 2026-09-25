@@ -1,0 +1,57 @@
+# Create your first task
+
+Use a JavaScript script that prints the time to walk through installation, initialization, execution and logs.
+
+## 1. Install the panel
+
+Follow [Docker Compose deployment](./installation-guide/docker-compose) or choose another [installation method](./installation-guide). Open `http://localhost:5700`; for remote deployments, use the server address and mapped port.
+
+On first access, follow the initialization screen to create an administrator account. Sign in directly if the panel is already initialized.
+
+## 2. Add a script
+
+In **Script Management**, create `hello.js` in the script root directory and save:
+
+```javascript
+console.log('Hello, Qinglong!');
+console.log(new Date().toISOString());
+```
+
+No extra dependencies or environment variables are needed. If you use a subdirectory, include that relative path in the task command.
+
+## 3. Create a scheduled task
+
+Create a task under **Scheduled Tasks**:
+
+| Field | Value |
+| --- | --- |
+| Name | First task |
+| Command | `task hello.js` |
+| Schedule | `0 9 * * *` |
+
+This schedule runs daily at 09:00 in the panel's configured timezone. Save and confirm the task is enabled. You do not need to wait for the next scheduled execution.
+
+## 4. Run and inspect logs
+
+Run the task from the task list, then open its log. Expect `Hello, Qinglong!` and a timestamp.
+
+An accepted run request only means submission succeeded. Wait for the current run to finish and check its log and execution result. Do not confuse a previous log with the current run.
+
+For missing-file errors, check the script name, directory and command path. For connection or startup problems, see [maintenance and troubleshooting](../user-guide/maintenance).
+
+## 5. Manage it with the CLI (optional)
+
+Install and authenticate the remote client using the [CLI guide](../user-guide/cli). Grant the application the `crons` scope:
+
+```bash
+ql task list --search hello.js --json
+```
+
+Use the actual task ID returned in the result. Here, `12` is only an example:
+
+```bash
+ql task run 12 --json
+ql task logs 12 --tail 50 --json
+```
+
+Disable the task after the exercise if you do not want it to run daily. Keep the script for further experiments, and see the [built-in API](../user-guide/built-in-api) to call panel features from scripts.

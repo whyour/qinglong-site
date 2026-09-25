@@ -15,17 +15,7 @@
 | client_id   | string | - |
 | client_secret | string | - |
 
-### 请求头参数
-
-```json
-{}
-```
-
-### 请求体参数
-
-```json
-{}
-```
+该 GET 请求使用查询参数，不需要请求体。
 
 ### 响应体参数
 
@@ -40,6 +30,8 @@
 }
 ```
 
+`expiration` 是 Unix 秒级过期时间戳，不是毫秒或剩余有效秒数。当前实现的有效期为 30 天。每个应用最多保留 5 个有效 token；达到上限后，再次获取会复用并延长第 5 个 token 的有效期。重置应用密钥会清空已有 token。
+
 ## 请求接口
 
 使用上面获取的 `token` 请求接口，所有模块接口的基础路径为 `/open`
@@ -47,7 +39,18 @@
 ### 请求示例
 
 ```bash
-curl 'http://[host]:[port]/open/env?t=1730550435755' \
+curl 'http://[host]:[port]/open/envs' \
   -H 'Accept: application/json' \
   -H 'Authorization: Bearer {token}'
+```
+
+
+## 使用 CLI
+
+可使用[远程 CLI](/guide/user-guide/cli)完成登录和请求，无需自行保存和刷新应用 token：
+
+```bash
+ql login --url https://ql.example.com
+ql auth status --scope envs --json
+ql env list --json
 ```

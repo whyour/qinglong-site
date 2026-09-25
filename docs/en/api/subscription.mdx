@@ -14,7 +14,7 @@ GET /
 ```typescript
 {
   searchValue?: string,  // Search keyword
-  ids?: string          // Subscription IDs list
+  ids?: string          // JSON-encoded ID array, e.g. "[1,2]"
 }
 ```
 
@@ -50,6 +50,30 @@ POST /
   autoDelCron?: boolean  // Auto delete cron task
 }
 ```
+
+### Update Subscription
+
+```http
+PUT /
+```
+
+The body requires `id: number`, `type: string`, `url: string` and `alias: string`. Other fields follow the create request, but `schedule_type` is optional when updating. On creation, `interval_schedule.value` must be at least 1.
+
+### Delete Subscriptions
+
+```http
+DELETE /
+```
+
+The body is an array of subscription IDs, such as `[1, 2]`. The optional query parameter `force=true` also deletes associated cron tasks, script directories and repository directories. Omitting it removes only the subscriptions.
+
+### Get Subscription Details
+
+```http
+GET /:id
+```
+
+`id` is a numeric subscription ID. The response `data` contains the subscription object.
 
 ### Run Subscription
 ```http
@@ -95,6 +119,8 @@ number[]  // Array of subscription IDs
 ```http
 GET /:id/log
 ```
+
+Query parameters accept `offset` (non-negative integer byte offset), `limit` (1–1048576 bytes) and `tail` (boolean). The response includes log text in `data`, plus `offset`, `nextOffset`, `total` and `truncated`. Use `nextOffset` to continue reading, rather than counting characters. See the [Log API](./log).
 
 ### Update Subscription Status
 ```http

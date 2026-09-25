@@ -1,0 +1,184 @@
+# 远程 CLI
+
+`@whyour/qinglong-cli` 是青龙的独立命令行客户端，通过 OpenAPI 管理远程面板。可以查询、创建和运行任务，管理订阅、环境变量、脚本、配置、依赖及系统设置，并输出 JSON 供自动化脚本或 AI Agent 使用。
+
+不同版本支持的命令和接口可能不同，请以已安装 CLI 的 `--help` 和目标面板版本为准。
+
+## 安装与入口选择
+
+需要 Node.js **22.12 或更高版本**，推荐 Node.js 24。
+
+```bash
+npm install -g @whyour/qinglong-cli
+ql --help
+ql task --help
+```
+
+面板自带的命令也叫 `ql`。在已安装面板的机器上，可以临时调用远程 CLI，避免占用内置命令名：
+
+```bash
+npm exec --package=@whyour/qinglong-cli -- ql --help
+```
+
+| 入口 | 用途 | 示例 |
+| --- | --- | --- |
+| npm 包 `@whyour/qinglong-cli` 的 `ql` | 调用远程面板 API | `ql task list`、`ql task run 12` |
+| 面板内置 Shell 命令 | 在面板宿主机或容器中执行脚本、维护服务 | `task demo.js`、`ql repo ...` |
+| 面板内部 TypeScript 工具 | 可选的本机执行与维护入口 | `node /ql/cli/dist/ql.js task exec --root /ql demo.js now` |
+
+npm CLI 不提供独立的 `task` 命令，也不包含本机脚本执行器、`repo/raw` 或 `reload/reset*`。本机使用方式见[基础说明](./basic-explanation)和[面板内部工具](./local-cli)。可以用 `command -v ql` 和 `ql --help` 确认当前入口；`QL_LANG=en` 切换英文帮助，命令和 JSON 字段保持不变。
+
+### 从源码构建
+
+也可以从青龙源码构建 CLI：
+
+```bash
+git clone --branch master https://github.com/whyour/qinglong.git
+cd qinglong
+npm ci --prefix cli
+npm run build:cli
+node cli/dist/npm/ql.js --help
+```
+
+`cli/dist/npm/ql.js` 是远程入口。后续示例中的 `ql` 可以替换为 `node /absolute/path/to/qinglong/cli/dist/npm/ql.js`。
+
+## 连接面板
+
+### 应用凭据登录
+
+在面板「系统设置 → 应用设置」创建应用，授予所需模块权限。例如任务需要 `crons`，订阅需要 `subscriptions`，环境变量需要 `envs`。
+
+```bash
+ql login --url https://ql.example.com
+# 按提示输入 Client ID 和 Client Secret
+ql auth status --scope crons --json
+ql task list --json
+```
+
+`login` 与 `auth login` 等价。地址填写面板根地址，可包含反向代理路径前缀，例如 `https://example.com/qinglong`，不要追加 `/open`。远程连接要求 HTTPS；回环地址允许 HTTP，例如 `http://127.0.0.1:5700`。CLI 不跟随重定向。
+
+Client Secret 不支持命令行参数。CI 中预先通过凭据配置注入 `QL_CLIENT_ID`、`QL_CLIENT_SECRET`，再执行相同的登录命令。
+
+登录信息默认保存在 `~/.config/qinglong/cli.json`，文件权限为 `0600`，包含明文应用凭据和 token。可用 `QL_CLI_CONFIG` 指定其他配置路径。应用 token 过期时自动刷新；登录成功只证明凭据有效，不代表拥有所有资源权限。
+
+### 直接使用已有令牌
+
+在终端或 CI 凭据配置中同时注入 `QL_URL` 和 `QL_ACCESS_TOKEN` 后，可直接调用命令，无需登录。支持有效的应用 token 或面板会话 token。
+
+这两个变量必须成对提供，优先于已保存的配置；令牌不会落盘，也不会自动刷新。失效时需要替换令牌，CLI 不会退回应用凭据。切回应用配置：
+
+```bash
+unset QL_URL QL_ACCESS_TOKEN
+ql auth status --json
+```
+
+`auth status` 默认检查 `crons` 的代表性读取接口；`--scope subscriptions` 等选项可以检查其他模块，但不证明所有写操作都获授权。应用管理需要 `apps` 权限或有效的授权面板会话，面板 UI 当前没有列出所有后端 scope。
+
+```bash
+ql auth logout --json
+```
+
+退出只删除本机配置，不撤销服务端 token，也不清除父进程的环境变量。需要撤销访问时，请在面板管理应用或会话。
+
+## 管理定时任务
+
+以下 ID 均为示例，请替换为目标面板实际返回的 ID。
+
+```bash
+ql task list --search demo --page 1 --size 50 --json
+ql task get 12 --json
+ql task create --name demo --command 'task demo.js' --schedule '0 0 * * *' --json
+ql task run 12 --json
+ql task logs 12 --tail 200 --json
+ql task instances 12 --json
+ql task stop 12 --json
+```
+
+脚本需要事先存在于面板中。`task run` 只是向面板提交运行请求，返回 `accepted: true` 不等于脚本执行成功。请结合任务状态、实例和日志检查结果；最新日志可能属于上一次运行，`logStatus: completed` 也不代表成功。
+
+更新需要提交完整的必填字段（`command`、`schedule`），不会自动读取旧值后合并：
+
+```bash
+ql task update 12 --data '{"name":"demo","command":"task demo.js","schedule":"0 8 * * *","allow_multiple_instances":0}' --json
+ql task enable 12 13 --json
+```
+
+`task run/stop` 每次只接受一个 ID。批量执行使用数组请求体：
+
+```bash
+ql api request PUT /open/crons/run --data '[12,13]' --json
+```
+
+## 管理订阅
+
+```bash
+ql subscription list --json
+ql subscription get 5 --json
+ql subscription create --type public-repo --url https://example.com/repo.git --alias demo --schedule-type crontab --schedule '0 0 * * *' --json
+ql subscription run 5 --json
+ql subscription logs 5 --tail 200 --json
+ql subscription stop 5 --json
+ql subscription disable 5 --json
+ql subscription enable 5 --json
+```
+
+将示例仓库地址替换为实际地址。创建需要 `type/url/alias/schedule_type`；更新需要 `type/url/alias`。筛选、分支、间隔规则、hook 等字段可用 `--data @subscription.json` 提交。私有仓库凭据使用受保护文件或标准输入传递。运行、停止、启用和禁用一次操作一个订阅。
+
+## 环境变量、文件与系统
+
+创建环境变量使用对象数组，例如 `envs.json`：
+
+```json
+[{"name":"EXAMPLE","value":"demo","remarks":"CLI example"}]
+```
+
+```bash
+ql env create --data @envs.json --json
+ql env list --query '{"searchValue":"EXAMPLE"}' --json
+ql script create --file ./demo.js --data '{"filename":"demo.js","path":""}' --json
+ql script get --query '{"file":"demo.js","path":""}' --json
+ql config get --query '{"path":"config.sh"}' --json
+ql log download --data '{"filename":"example.log","path":"demo"}' --output ./example.log --json
+ql system info --json
+ql dashboard overview --json
+```
+
+`--file` 指定上传文件；`--output` 指定下载路径，CLI 不覆盖已存在的文件。应用命令默认隐藏 `client_secret` 和 `tokens`，明确需要时使用 `--show-secrets`；其他资源输出可能包含环境变量值、文件内容或会话信息。
+
+## 通用请求与命令参考
+
+```bash
+ql api routes --json
+ql api request GET /open/crons --query '{"searchValue":"demo","page":1,"size":100}' --json
+ql task create --help
+```
+
+[API 与 CLI 路由参考](/api/routes)列出当前注册的命令及 HTTP 路径。`api request` 仅允许 CLI 路由表中的方法与路径，不是任意 HTTP 客户端。
+
+- `--data` 接受 JSON 字符串、`@file.json` 或 `-`（标准输入）；`--query` 同样支持这些形式，但内容必须是对象。
+- 不要同时让 `--data` 和 `--query` 读取标准输入，同一字段也不能同时通过 `--data` 和命名选项提交。
+- 通用请求和新增资源命令支持 `--timeout`，单位为秒，默认 30，最大 3600。既有 `task list/get/run/stop/logs` 与对应订阅命令的选项以 `--help` 为准。
+- `task list` 默认每页 50 条，最多 200 条；`task logs` 和 `subscription logs` 默认显示末尾 200 行，最多 10000 行。行截取发生在客户端，不能减少服务端读取量。
+
+## JSON 输出与错误处理
+
+默认输出缩进 JSON，`--json` 输出单行 JSON。成功结果写入 stdout，错误写入 stderr。
+
+```json
+{"code":200,"data":{"taskId":12,"action":"run","accepted":true}}
+```
+
+| 退出码 | 含义 |
+| --- | --- |
+| `0` | 命令成功 |
+| `1` | API、网络或配置错误 |
+| `2` | 参数错误 |
+| `3` | 未登录、401/403 或需要双因素验证 |
+
+CLI 不自动重试 HTTP 请求。网络错误或超时后，远端操作可能已经执行，应先查询状态再决定是否重试。普通运行接口不返回独立运行 ID，也没有幂等键。
+
+## Agent Skill
+
+npm 包附带 `skills/qinglong-cli`，可复制到所用 Agent 的 skills 目录，提供认证、命令选择和结果检查说明。Skill 使用独立的远程 npm 入口，不保存凭据、不替代面板权限。本机执行和维护使用独立的 `qinglong-local` Skill。
+
+源码参考：[远程 CLI](https://github.com/whyour/qinglong/tree/master/cli)、[远程 Skill](https://github.com/whyour/qinglong/tree/master/cli/skills/qinglong-cli)。

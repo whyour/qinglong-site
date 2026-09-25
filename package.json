@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "rspress dev",
     "build": "rspress build",
-    "preview": "rspress preview"
+    "preview": "rspress preview",
+    "check:docs": "npm run build && node scripts/check-docs.mjs",
+    "check:api": "node scripts/check-api-routes.mjs"
   },
   "dependencies": {
     "rspress": "^1.35.0"

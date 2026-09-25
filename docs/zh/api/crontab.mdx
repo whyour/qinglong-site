@@ -295,3 +295,31 @@ GET /:id/logs
 - 所有路由都使用 celebrate/Joi 进行参数验证
 - cron 表达式会通过 cron-parser 进行有效性验证
 - 批量操作接口（如运行、停止、删除等）都接受任务ID数组
+
+## 执行选项与任务实例
+
+创建和更新除原有字段外，还支持：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `log_name` | string | 自定义日志名，支持中文；相对名称最长 100 字符，不允许 `.`/`..` 路径段；绝对路径须在日志目录内，或使用 `/dev/null` |
+| `allow_multiple_instances` | number | `0` 或 `1`，是否允许多实例运行 |
+| `work_dir` | string | 执行工作目录 |
+
+`command` 和 `schedule` 在创建及更新时均必填。定时规则支持秒级设置；步长使用 `*/5` 等合法表达式，不支持裸 `/5` 和包含 `?` 的 Quartz 表达式。
+
+| 方法 | 完整路径 | 说明 |
+| --- | --- | --- |
+| GET | `/open/crons/:id/instances` | 查询任务实例，按启动时间降序排列 |
+| POST | `/open/crons/:id/instances/:instanceId/stop` | 停止指定实例 |
+
+```bash
+ql task instances 12 --json
+ql task instance-stop 12 34 --json
+```
+
+### 日志分块
+
+`GET /open/crons/:id/log` 支持 `offset`（非负字节偏移）、`limit`（最多 1048576 字节）和 `tail`（布尔值）。响应除 `data` 外，包含 `logStatus`、`offset`、`nextOffset`、`total`、`truncated`。与 CLI 的 `--tail` 行数参数不同，HTTP 参数按字节分块。
+
+列表分页及 CLI 运行结果说明见[远程 CLI](/guide/user-guide/cli)。HTTP 运行接口接受 ID 数组；运行请求返回成功不表示脚本已经执行完成。

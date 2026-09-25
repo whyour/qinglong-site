@@ -12,7 +12,7 @@
 GET /apps
 ```
 
-Get list of all created applications.
+List created applications, excluding the internal `system` application. The returned `tokens` arrays are empty.
 
 #### Create Application
 ```http
@@ -22,8 +22,8 @@ POST /apps
 **Request Body**
 ```typescript
 {
-  name: string,      // Application name (cannot be 'system')
-  scopes: string[]   // Permission scopes
+  name?: string,      // Application name (cannot be 'system')
+  scopes?: string[]   // Permission scopes
 }
 ```
 
@@ -36,8 +36,8 @@ PUT /apps
 ```typescript
 {
   id: number,       // Application ID
-  name: string,     // Application name
-  scopes: string[]  // Permission scopes
+  name?: string,     // Application name
+  scopes?: string[]  // Permission scopes
 }
 ```
 
@@ -56,7 +56,7 @@ number[]  // Array of application IDs
 PUT /apps/:id/reset-secret
 ```
 
-Reset the secret key for specified application.
+Reset the application secret and invalidate its existing tokens. Clients must obtain a new token using the new secret.
 
 ### Authentication
 

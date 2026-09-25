@@ -1,1 +1,7 @@
-["basic-explanation", "built-in-api"]
+[
+  "basic-explanation",
+  "cli",
+  "local-cli",
+  "built-in-api",
+  "maintenance"
+]

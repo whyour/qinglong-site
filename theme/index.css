@@ -1,7 +1,99 @@
+.ql-scroll-to-top {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  z-index: 1;
+  padding: 0.625rem;
+  border: 1px solid var(--rp-c-divider-light);
+  border-radius: 50%;
+  color: var(--rp-c-text-1);
+  background: var(--rp-c-bg-soft);
+  cursor: pointer;
+}
+
+.ql-scroll-to-top:focus-visible {
+  outline: 2px solid var(--rp-c-brand);
+  outline-offset: 3px;
+}
+
 .rspress-home-hero-text {
   max-width: 43rem;
 }
 
 .rspress-home-hero-image {
   width: 350px;
+}
+
+/* Home cards stay in the existing theme; links remain real keyboard targets. */
+.rspress-home-feature-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--rp-c-divider-light);
+}
+
+.rspress-home-feature-card .rspress-home-feature-title {
+  text-align: left;
+  line-height: 1.5;
+}
+
+.rspress-home-feature-card .rspress-home-feature-detail {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1.25rem;
+  line-height: 1.8;
+}
+
+.rspress-home-feature-card .ql-feature-link {
+  margin-top: auto;
+  color: var(--rp-c-brand);
+  font-weight: 600;
+  text-decoration: none;
+  text-underline-offset: 0.25em;
+}
+
+.rspress-home-feature-card .ql-feature-link:hover {
+  text-decoration: underline;
+}
+
+.rspress-home-feature-card .ql-feature-link:focus-visible {
+  outline: 2px solid var(--rp-c-brand);
+  outline-offset: 5px;
+  border-radius: 2px;
+}
+
+.rspress-home-hero-tagline {
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+
+.rspress-home-feature-card > .flex-center {
+  justify-content: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .rspress-home-hero-tagline {
+    font-size: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
 }

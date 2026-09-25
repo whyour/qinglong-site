@@ -12,7 +12,7 @@
 GET /apps
 ```
 
-获取所有已创建的应用。
+获取已创建的应用，排除内部 `system` 应用；响应中的 `tokens` 数组为空。
 
 #### 创建应用
 ```http
@@ -22,8 +22,8 @@ POST /apps
 **请求体**
 ```typescript
 {
-  name: string,      // 应用名称（不能为'system'）
-  scopes: string[]   // 权限范围
+  name?: string,      // 应用名称（不能为'system'）
+  scopes?: string[]   // 权限范围
 }
 ```
 
@@ -36,8 +36,8 @@ PUT /apps
 ```typescript
 {
   id: number,       // 应用ID
-  name: string,     // 应用名称
-  scopes: string[]  // 权限范围
+  name?: string,     // 应用名称
+  scopes?: string[]  // 权限范围
 }
 ```
 
@@ -56,7 +56,7 @@ number[]  // 应用ID数组
 PUT /apps/:id/reset-secret
 ```
 
-重置指定应用的密钥。
+重置指定应用的密钥，并清空已有令牌。调用方需要使用新密钥重新获取 token。
 
 ### 认证
 

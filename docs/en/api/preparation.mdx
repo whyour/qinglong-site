@@ -15,17 +15,7 @@ To add an application in System Settings -> Application Settings, select module 
 | client_id   | string | - |
 | client_secret | string | - |
 
-### Header Params
-
-```json
-{}
-```
-
-### Body Params
-
-```json
-{}
-```
+This GET request uses query parameters and does not require a request body.
 
 ### Response Body Params
 
@@ -40,6 +30,8 @@ To add an application in System Settings -> Application Settings, select module 
 }
 ```
 
+`expiration` is a Unix timestamp in seconds, not milliseconds or a remaining duration. Tokens currently last 30 days. Each application keeps up to 5 valid tokens; further requests reuse the fifth token and extend its expiration. Resetting the application secret invalidates existing tokens.
+
 ## Making API Requests
 
 Use the `token` obtained above to make API requests. The base path for all module interfaces is `/open`
@@ -47,7 +39,17 @@ Use the `token` obtained above to make API requests. The base path for all modul
 ### Request Example
 
 ```bash
-curl 'http://[host]:[port]/open/env?t=1730550435755' \
+curl 'http://[host]:[port]/open/envs' \
   -H 'Accept: application/json' \
   -H 'Authorization: Bearer {token}'
+```
+
+## Use the CLI
+
+The [remote CLI](/guide/user-guide/cli) handles application login and token refresh:
+
+```bash
+ql login --url https://ql.example.com
+ql auth status --scope envs --json
+ql env list --json
 ```

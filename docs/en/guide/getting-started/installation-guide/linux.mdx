@@ -1,21 +1,20 @@
-# Local
+# Native Linux deployment
 
-It is recommended to use a pure system installation to avoid losing the original system data, you need to install node/npm/python3/pip3 yourself
+Supports Debian, Ubuntu and Alpine. Startup installs system dependencies and configures services including nginx; use a dedicated environment. Install Node.js, npm, Python3 and pip3 first. The runtime user needs permission to manage system dependencies and services. The new CLI requires Node.js 22.12 or newer; 24 is recommended.
 
-```bash
-# Debian/Ubuntu
-curl -sL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-# Centos
-curl --silent --location https://rpm.nodesource.com/setup_20.x | sudo bash
-```
+## Install and configure paths
 
 ```bash
-npm install -g node-pre-gyp pnpm
+npm install -g node-pre-gyp pnpm@8.3.1
 npm install -g @whyour/qinglong
-qinglong
-# Add the environment variables QL_DIR and QL_DATA_DIR when prompted
-export QL_DIR=""
-export QL_DATA_DIR=""
-# Run again
+export QL_DIR="$(npm root -g)/@whyour/qinglong"
+export QL_DATA_DIR="$HOME/qinglong/data"
+mkdir -p "$QL_DATA_DIR"
 qinglong
 ```
+
+`QL_DIR` is the installed panel directory. `QL_DATA_DIR` stores persistent data and must be an absolute path ending in `/data`. Use the same user and npm environment as installation; do not leave either path empty. Persist these variables in the actual panel user or service environment for subsequent starts.
+
+Open `http://localhost:5700`, initialize the panel and [create your first task](../first-task).
+
+`@whyour/qinglong` installs the panel; `@whyour/qinglong-cli` installs the remote client. Both provide `ql`; see the [CLI guide](/guide/user-guide/cli) for separate entrypoints.

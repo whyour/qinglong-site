@@ -204,3 +204,82 @@ PUT /
 
 **Request Body**
 ```typescript
+{
+  id: number,
+  command: string,
+  schedule: string,
+  name?: string,
+  labels?: string[],
+  sub_id?: number,
+  extra_schedules?: any[],
+  task_before?: string,
+  task_after?: string
+}
+```
+
+#### Delete, pin and unpin tasks
+
+| Method | Path | Body |
+| --- | --- | --- |
+| DELETE | `/` | Task ID array |
+| PUT | `/pin` | Task ID array |
+| PUT | `/unpin` | Task ID array |
+
+```json
+[12,13]
+```
+
+#### Import tasks
+
+`GET /import` imports tasks from crontab. This request changes panel state.
+
+#### Get a single task
+
+`GET /:id` returns task details for the supplied ID.
+
+#### Update task status
+
+`PUT /status` accepts:
+
+```typescript
+{
+  ids: number[],
+  status: string,
+  pid?: string,
+  log_path?: string,
+  last_running_time?: number,
+  last_execution_time?: number
+}
+```
+
+#### List task log files
+
+`GET /:id/logs` lists the task's log files. Use the [log API](./log) to read or download a file.
+
+## Execution options and task instances
+
+Creation and updates also accept:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `log_name` | string | Custom log name, including Chinese characters; relative names have a 100-character limit and cannot contain `.`/`..` path segments; absolute paths must remain in the log directory, except `/dev/null` |
+| `allow_multiple_instances` | number | `0` or `1`, allowing concurrent instances |
+| `work_dir` | string | Working directory |
+
+Both create and update require `command` and `schedule`. Schedules support seconds; use valid step expressions such as `*/5`, not bare `/5` or Quartz expressions containing `?`.
+
+| Method | Full path | Description |
+| --- | --- | --- |
+| GET | `/open/crons/:id/instances` | List task instances, newest start first |
+| POST | `/open/crons/:id/instances/:instanceId/stop` | Stop a specific instance |
+
+```bash
+ql task instances 12 --json
+ql task instance-stop 12 34 --json
+```
+
+### Log chunks
+
+`GET /open/crons/:id/log` accepts `offset` (non-negative byte offset), `limit` (at most 1048576 bytes), and boolean `tail`. Responses include `data`, `logStatus`, `offset`, `nextOffset`, `total` and `truncated`. HTTP chunk sizes use bytes; the CLI's `--tail` option uses lines.
+
+See the [remote CLI guide](/guide/user-guide/cli) for pagination and run responses. The HTTP run endpoint accepts an ID array. An accepted request does not mean script execution has completed.

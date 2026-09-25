@@ -1,0 +1,47 @@
+# 维护与故障排查
+
+以下命令以 [Compose 部署](../getting-started/installation-guide/docker-compose)为例，在保存 `compose.yaml` 的部署目录执行。服务名为 `qinglong`，数据目录为 `./data`；其他部署方式请替换实际名称和路径。
+
+## 升级前备份
+
+备份应覆盖整个持久化数据目录，包括数据库、脚本、配置和日志。为避免复制正在写入的数据库，先停止面板，再打包：
+
+```bash
+docker compose stop qinglong
+sudo tar -czf "qinglong-data-$(date +%Y%m%d-%H%M%S).tar.gz" data
+docker compose start qinglong
+```
+
+确认打包成功后再继续升级。备份中可能包含账号信息、应用密钥和环境变量，应保存在受控位置。建议记录当前镜像版本或摘要，并将备份复制到独立存储。
+
+## 升级镜像
+
+```bash
+docker compose pull qinglong
+docker compose up -d qinglong
+docker compose logs --tail 100 qinglong
+```
+
+检查登录、脚本目录、任务和日志是否正常。需要固定版本时，将 `compose.yaml` 中的镜像改为所选的已发布标签或摘要后再更新。
+
+不要将降级镜像视为完整回滚：新版可能改变数据结构。回滚时使用与备份相匹配的镜像和数据。
+
+## 恢复备份
+
+停止面板，把当前 `data` 移到其他位置保留，再将备份解压到部署目录，使最终结构仍为 `./data/...`。确认文件所有者和权限符合运行用户要求后启动面板。不要直接把备份覆盖到正在运行的数据库上。
+
+首次恢复建议在隔离环境中验证，并禁用定时任务或断开外部服务，避免恢复验证期间重复执行真实任务。
+
+## 常见问题
+
+| 现象 | 排查步骤 |
+| --- | --- |
+| 无法访问面板 | 执行 `docker compose ps` 和 `docker compose logs --tail 100 qinglong`，核对端口映射、`QlPort`、代理路径及防火墙 |
+| 找不到脚本 | 核对脚本管理中的路径；子目录脚本使用 `task folder/hello.js` |
+| 缺少 Node/Python 模块 | 在依赖管理中选择对应语言安装依赖，检查安装日志后再运行任务 |
+| 定时未触发 | 检查任务是否启用、定时规则和时区；查看排队状态及运行中实例 |
+| 挂载目录不可写 | 核对宿主机目录权限、容器运行用户和 SELinux 配置；非 root 部署参考 [Docker 说明](../getting-started/installation-guide/docker) |
+| CLI 返回 401/403 | 检查凭据或令牌是否有效，使用 `ql auth status --scope crons --json` 检查目标模块；确认环境令牌没有覆盖已保存配置 |
+| `ql` 不识别命令 | 用 `command -v ql`、`ql --help` 确认是[远程 CLI](./cli)还是[内部工具](./local-cli) |
+
+`ql check` 会安装依赖、修复并重载服务；初步排查先查看日志和配置。日志分享前请移除 token、环境变量值和私有仓库凭据。

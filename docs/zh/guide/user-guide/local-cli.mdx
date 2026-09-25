@@ -1,0 +1,74 @@
+# 面板内部工具
+
+青龙提供 TypeScript 实现的本机脚本执行和维护工具，随面板源码及内部构建交付。它与[远程 npm CLI](./cli)使用独立命令树，必须在实际安装面板的宿主机或容器内运行，需要 Node.js 22.12 或更高版本、Bash 以及任务所需的解释器。
+
+## 构建与使用
+
+在青龙源码目录构建：
+
+```bash
+npm ci --prefix cli
+npm run build:cli
+node cli/dist/ql.js --help
+```
+
+以下示例假设面板根目录为 `/ql`，且该目录包含构建好的 `cli/dist`：
+
+```bash
+node /ql/cli/dist/ql.js task exec --root /ql demo.js now
+node /ql/cli/dist/ql.js reload --root /ql
+# Docker：构建文件必须存在于容器内
+docker exec qinglong node /ql/cli/dist/ql.js task exec --root /ql demo.js now
+```
+
+仅挂载 `data` 目录不足以构成本机运行环境。不能用工作站上的 npm CLI 执行这些命令。
+
+## 选择面板内部入口
+
+默认仍使用原有 [Shell 命令](./basic-explanation)。要让支持入口选择的面板使用内部 TypeScript 工具，在面板启动环境中设置：
+
+```bash
+export QL_CLI_ROOT=/absolute/path/to/qinglong/cli
+```
+
+路径必须指向包含**完整 `dist`** 的内部构建目录，不能指向 `@whyour/qinglong-cli` npm 包。重启面板后，加载器在运行用户的 `~/bin` 创建私有 `ql/task/crontab` 包装器，并让面板子进程优先使用它们。独立终端可显式使用 `~/bin/ql`；Docker 需要将变量配置到容器环境并重建容器。无效路径会报错，不会静默降级。
+
+清除该变量并重启面板即可恢复原 Shell 入口。设置变量之前，请先完成内部工具构建。
+
+## 常用命令
+
+下表中的 `ql` 均指已选择的内部入口，也可替换为 `node /ql/cli/dist/ql.js`。
+
+| 用途 | 命令 |
+| --- | --- |
+| 执行脚本 | `ql task exec [选项] [脚本]` |
+| 同步仓库 | `ql repo <url> [include] [exclude] [dependencies] [branch] [extensions] [proxy] [autoAdd] [autoDelete]` |
+| 下载单文件 | `ql raw <url> [proxy] [autoAdd] [autoDelete]` |
+| 启动 | `ql start` |
+| 修复配置 | `ql repair-config` |
+| 检查并修复环境 | `ql check` |
+| 更新 | `ql update [--mirror github\|gitee] [--download-only]` |
+| 重载 | `ql reload [--target services\|system\|data]` |
+| 清理旧日志 | `ql rmlog <days>` |
+| 运行扩展脚本 / Bot | `ql extra` / `ql bot` |
+| 重置登录错误次数 / 两步验证 | `ql resetlet` / `ql resettfa` |
+| 重设密码 / 用户名 | `ql resetpwd -- <value>` / `ql resetname -- <value>` |
+
+`check` 会安装依赖、修复并重载服务。`reload` 默认重启服务；`system/data` 用于应用暂存文件。`start --no-startup` 跳过操作系统启动注册，`start --reload` 跳过依赖安装、可选 hook 和启动注册。
+
+维护选项 `--root`、`--data-dir` 和 `--json` 放在 `--` 前。密码位置参数会出现在进程参数中，应只在可信终端操作。`repo/raw` 使用 `QL_DIR/QL_DATA_DIR`，不接受 `--root/--json`；仓库筛选采用 `grep -E` 的 POSIX 扩展正则。
+
+## 脚本参数与兼容性
+
+```bash
+# 执行器选项放在脚本名之前
+node /ql/cli/dist/ql.js task exec --root /ql demo.js now
+# -- 后的参数传给脚本
+node /ql/cli/dist/ql.js task exec --root /ql demo.js -- --mode daily
+```
+
+`now` 跳过随机延迟；`conc`、`desi` 支持账号选择。配置和 hook 继续使用 Bash。`--json` 将脚本输出写入 stderr、最终结果写入 stdout，并保留脚本退出码。
+
+兼容 `ql task <脚本>`、`task <脚本>` 和 `ql local <命令>`；与 API 动作同名的脚本使用明确的 `task exec`。配置了 `QL_DIR` 后，无参数 `ql task` 或 `task` 显示 JavaScript 脚本清单。`update false` 等价于 `--download-only`，`reload system/data/services` 对应 `--target`。
+
+源码说明与完整参考：[内部工具](https://github.com/whyour/qinglong/blob/master/cli/LOCAL.md)、[本机 Skill](https://github.com/whyour/qinglong/tree/master/cli/skills/qinglong-local)。

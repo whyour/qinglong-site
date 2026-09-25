@@ -65,7 +65,7 @@ PUT /two-factor/active
 
 #### Deactivate Two-Factor
 ```http
-PUT /two-factor/deactive
+PUT /two-factor/deactivate
 ```
 
 #### Two-Factor Login
@@ -82,10 +82,22 @@ PUT /two-factor/login
 }
 ```
 
+Two-factor login is limited to 20 requests per 15 minutes.
+
 ### Login Log
 ```http
 GET /login-log
 ```
+
+### IP Blacklist
+
+Use `GET /ip-blacklist` to list blocked addresses, `PUT /ip-blacklist` to block an address, and `DELETE /ip-blacklist` to unblock it. PUT and DELETE take a JSON body:
+
+```json
+{"ip":"192.0.2.1"}
+```
+
+`ip` is required and accepts a single IPv4 or IPv6 address. CIDR ranges are not accepted.
 
 ### Notification Settings
 
@@ -127,6 +139,7 @@ PUT /avatar
 **Request Body**
 - Content-Type: `multipart/form-data`
 - Field: `avatar` (file)
+- One file, at most 5 MiB. Supports PNG, JPEG, GIF, WebP and AVIF; the extension must match the MIME type.
 
 ## Error Handling
 - All endpoints follow unified error handling mechanism

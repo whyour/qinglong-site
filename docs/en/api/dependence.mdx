@@ -23,7 +23,7 @@ POST /
   {
     name: string,    // Dependency name
     type: number,    // Dependency type
-    remark: string   // Remark (optional)
+    remark?: string   // Remark (optional)
   }
 ]
 ```
@@ -39,7 +39,7 @@ PUT /
   id: number,      // Dependency ID
   name: string,    // Dependency name
   type: number,    // Dependency type
-  remark: string   // Remark (optional)
+  remark?: string   // Remark (optional)
 }
 ```
 
@@ -98,3 +98,17 @@ number[]  // Array of dependency IDs
 ## Notes
 - Parameter validation using celebrate/Joi
 - Supports batch operations (delete, reinstall, cancel, etc.)
+
+## Permissions and filters
+
+The full base path is `/open/dependencies`; applications require the `dependencies` scope. List queries accept optional `searchValue`, `type` and `status` URL parameters.
+
+Dependency `type`: `0` for Node.js, `1` for Python3 and `2` for Linux packages. Use numeric types in create/update bodies. Creation accepts an array of objects; updates require `id/name/type`.
+
+For list filters, `type` uses the enum names `nodejs`, `python3` or `linux`, unlike the numeric values in create/update bodies. `status` accepts comma-separated values, such as `"2,5"`.
+
+`status`: `0` installing, `1` installed, `2` installation failed, `3` removing, `4` removed, `5` removal failed, `6` queued and `7` cancelled. An accepted create/reinstall request does not mean installation has finished; check status and installation logs.
+
+```bash
+ql dependency list --query '{"type":"nodejs","status":"2"}' --json
+```

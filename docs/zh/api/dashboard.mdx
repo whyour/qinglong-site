@@ -1,0 +1,38 @@
+# 仪表盘 API
+
+基础路径：`/open/dashboard`。应用需要 `dashboard` 权限。
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| GET | `/overview` | 任务总数、启用/禁用数、今日运行与成功/失败次数、成功率、平均耗时 |
+| GET | `/successes` | 今日成功任务，包含 `id/name/command/successCount/deleted` |
+| GET | `/failures` | 今日失败任务，包含 `id/name/command/failCount/deleted` |
+| GET | `/trend` | 按天统计趋势，查询参数 `days` 默认 7 |
+| GET | `/top-time` | 今日耗时排名，最多 5 项 |
+| GET | `/top-count` | 今日运行次数排名，最多 5 项 |
+| GET | `/runtime` | 运行中实例、排队数量和近期未执行任务 |
+| GET | `/labels` | 按标签聚合任务数量、运行次数、成功率和耗时 |
+| GET | `/system` | 操作系统、内存、CPU 数量、负载和进程运行时间 |
+| POST | `/record` | 写入任务执行统计 |
+
+统计耗时 `avgTime/maxTime` 单位为毫秒，运行中实例的 `elapsed` 单位为秒。任务已删除但统计仍保留时，成功/失败列表的 `deleted` 为 true。
+
+```bash
+ql dashboard overview --json
+ql dashboard trend --query '{"days":7}' --json
+ql dashboard runtime --json
+```
+
+当前 CLI 未收录 `successes/failures`，包括 `api request` 也不支持，可用已授权的 token 直接发送 HTTP 请求：
+
+```bash
+curl 'https://ql.example.com/open/dashboard/failures'   -H "Authorization: Bearer $QL_ACCESS_TOKEN"
+```
+
+## 写入统计
+
+`POST /record` 使用以下请求体；`ref_id` 为任务 ID，`code` 为脚本退出码（数字 `0` 表示成功），`elapsed` 为耗时秒数。此接口会累加当天统计，不是只读查询。
+
+```json
+{"ref_id":12,"code":0,"elapsed":1.5}
+```

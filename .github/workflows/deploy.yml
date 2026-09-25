@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  Build:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -29,21 +29,21 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
       - name: Build with Rspress
         run: |
-          pnpm run build
+          pnpm run check:docs
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: doc_build
 
-  Deploy:
+  deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

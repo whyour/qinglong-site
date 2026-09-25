@@ -1,305 +1,172 @@
-
 # Built-in API
 
-> The global variable `QLAPI` is the entry point for built-in APIs
+`QLAPI` is available to JavaScript/TypeScript and Python scripts through the panel's task preloader. It uses the local runtime rather than application-token HTTP OpenAPI or the remote CLI. Running a script with plain Node/Python does not guarantee this variable is injected.
+
+This reference follows [`api.proto`](https://github.com/whyour/qinglong/blob/master/back/protos/api.proto) and preloader clients. JavaScript methods return Promises; Python methods synchronously return dictionaries. HTTP fields are not necessarily available in this API: for example, `work_dir` and `allow_multiple_instances` are absent from the current `CronItem` protocol.
 
 ## Methods
 
-### 1. getEnvs
-**Description**: Retrieves a list of environments
+Pass parameters as one object. Array fields require arrays, even for a single ID.
 
-**Request (GetEnvsRequest)**
+| Method | Purpose | Parameter object | Response type |
+| --- | --- | --- | --- |
+| `getEnvs` | List environment variables | `{ searchValue: string }` | `EnvsResponse` |
+| `createEnv` | Create environment variables | `{ envs: EnvItem[] }` | `EnvsResponse` |
+| `updateEnv` | Update an environment variable | `{ env: EnvItem }` | `EnvResponse` |
+| `deleteEnvs` | Delete environment variables | `{ ids: int32[] }` | `Response` |
+| `moveEnv` | Move an environment variable | `{ id: int32, fromIndex: int32, toIndex: int32 }` | `EnvResponse` |
+| `disableEnvs` | Disable environment variables | `{ ids: int32[] }` | `Response` |
+| `enableEnvs` | Enable environment variables | `{ ids: int32[] }` | `Response` |
+| `updateEnvNames` | Rename environment variables | `{ ids: int32[], name: string }` | `Response` |
+| `getEnvById` | Get an environment variable | `{ id: int32 }` | `EnvResponse` |
+| `systemNotify` | Send a notification | `{ title: string, content: string, notificationInfo?: NotificationInfo }` | `Response` |
+| `getCronDetail` | Find a task by log path | `{ log_path: string }` | `CronDetailResponse` |
+| `createCron` | Create a task | `{ command: string, schedule: string, name?: string, labels: string[], sub_id?: int32, extra_schedules: ExtraScheduleItem[], task_before?: string, task_after?: string }` | `CronResponse` |
+| `updateCron` | Update a task | `{ id: int32, command?: string, schedule?: string, name?: string, labels: string[], sub_id?: int32, extra_schedules: ExtraScheduleItem[], task_before?: string, task_after?: string }` | `CronResponse` |
+| `deleteCrons` | Delete tasks | `{ ids: int32[] }` | `Response` |
+| `getCrons` | List tasks | `{ searchValue?: string }` | `CronsResponse` |
+| `getCronById` | Get a task | `{ id: int32 }` | `CronResponse` |
+| `enableCrons` | Enable tasks | `{ ids: int32[] }` | `Response` |
+| `disableCrons` | Disable tasks | `{ ids: int32[] }` | `Response` |
+| `runCrons` | Run tasks | `{ ids: int32[] }` | `Response` |
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| searchValue | string | Yes | Search keyword |
+`?` marks optional protocol fields; server validation still applies. `createCron` requires `command/schedule`. Include the complete command and schedule when updating a task. `getCronDetail` looks up `log_path`, not a task ID.
 
-**Response (EnvsResponse)**
-
-| Field | Type | Description |
-|-------|------|-------------|
-| code | int32 | Response code |
-| data | EnvItem[] | Environment list |
-| message | string | Response message |
-
-### 2. createEnv
-**Description**: Creates new environments
-
-**Request (CreateEnvRequest)**
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| envs | EnvItem[] | Yes | Array of environments to create |
-
-**Response (EnvsResponse)**
-
-| Field | Type | Description |
-|-------|------|-------------|
-| code | int32 | Response code |
-| data | EnvItem[] | Created environments |
-| message | string | Response message |
-
-### 3. updateEnv
-**Description**: Updates an existing environment
-
-**Request (UpdateEnvRequest)**
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| env | EnvItem | Yes | Environment to update |
-
-**Response (EnvResponse)**
-
-| Field | Type | Description |
-|-------|------|-------------|
-| code | int32 | Response code |
-| data | EnvItem | Updated environment |
-| message | string | Response message |
-
-### 4. deleteEnvs
-**Description**: Deletes specified environments
-
-**Request (DeleteEnvsRequest)**
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| ids | int32[] | Yes | Array of environment IDs to delete |
-
-**Response (Response)**
-
-| Field | Type | Description |
-|-------|------|-------------|
-| code | int32 | Response code |
-| message | string | Response message |
-
-### 5. moveEnv
-**Description**: Moves an environment to a different position
-
-**Request (MoveEnvRequest)**
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| id | int32 | Yes | Environment ID |
-| fromIndex | int32 | Yes | Original position |
-| toIndex | int32 | Yes | Target position |
-
-**Response (EnvResponse)**
-
-| Field | Type | Description |
-|-------|------|-------------|
-| code | int32 | Response code |
-| data | EnvItem | Moved environment |
-| message | string | Response message |
-
-### 6. disableEnvs
-**Description**: Disables specified environments
-
-**Request (DisableEnvsRequest)**
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| ids | int32[] | Yes | Array of environment IDs to disable |
-
-**Response (Response)**
-
-| Field | Type | Description |
-|-------|------|-------------|
-| code | int32 | Response code |
-| message | string | Response message |
-
-### 7. enableEnvs
-**Description**: Enables specified environments
-
-**Request (EnableEnvsRequest)**
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| ids | int32[] | Yes | Array of environment IDs to enable |
-
-**Response (Response)**
-
-| Field | Type | Description |
-|-------|------|-------------|
-| code | int32 | Response code |
-| message | string | Response message |
-
-### 8. updateEnvNames
-**Description**: Updates names for specified environments
-
-**Request (UpdateEnvNamesRequest)**
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| ids | int32[] | Yes | Array of environment IDs |
-| name | string | Yes | New name to set |
-
-**Response (Response)**
-
-| Field | Type | Description |
-|-------|------|-------------|
-| code | int32 | Response code |
-| message | string | Response message |
-
-### 9. getEnvById
-**Description**: Retrieves an environment by its ID
-
-**Request (GetEnvByIdRequest)**
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| id | int32 | Yes | Environment ID |
-
-**Response (EnvResponse)**
-
-| Field | Type | Description |
-|-------|------|-------------|
-| code | int32 | Response code |
-| data | EnvItem | Environment details |
-| message | string | Response message |
-
-### 10. systemNotify
-**Description**: Sends system notifications
-
-**Request (SystemNotifyRequest)**
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| title | string | Yes | Notification title |
-| content | string | Yes | Notification content |
-| notificationInfo | object | No | Optional notification configuration (uses system default if not provided) |
-
-#### notificationInfo Sub-fields
-| Field | Type | Description |
-|-------|------|-------------|
-| type | NotificationMode | Notification method type (enum values, see description below) |
-| gotifyUrl | string | Gotify notification (effective when type=gotify): Gotify service address (e.g., http://localhost:8080) |
-| gotifyToken | string | Gotify notification (effective when type=gotify): Gotify application token (required) |
-| gotifyPriority | number | Gotify notification (effective when type=gotify): Message priority (0-10, default 5) |
-| goCqHttpBotUrl | string | Go-CQHttp QQ bot (effective when type=goCqHttpBot): Go-CQHttp service address (e.g., http://localhost:5700) |
-| goCqHttpBotToken | string | Go-CQHttp QQ bot (effective when type=goCqHttpBot): Access token (configured access_token) |
-| goCqHttpBotQq | string | Go-CQHttp QQ bot (effective when type=goCqHttpBot): Target QQ number (group number or friend QQ) |
-| serverChanKey | string | ServerChan (effective when type=serverChan): ServerChan key (string starting with SC) |
-| pushDeerKey | string | PushDeer (effective when type=pushDeer): PushDeer key (string starting with pd) |
-| pushDeerUrl | string | PushDeer (effective when type=pushDeer): Self-hosted PushDeer service address (default: https://api2.pushdeer.com) |
-| barkPush | string | Bark (effective when type=bark): Bark device identifier (e.g., abc123) |
-| barkIcon | string | Bark (effective when type=bark): Message icon URL (optional, system default icon by default) |
-| barkSound | string | Bark (effective when type=bark): Notification sound (e.g., alert, optional) |
-| barkGroup | string | Bark (effective when type=bark): Message group (optional) |
-| barkLevel | string | Bark (effective when type=bark): Message level (active/timeSensitive/passive) |
-| barkUrl | string | Bark (effective when type=bark): Self-hosted Bark service address (default: https://api.day.app) |
-| barkArchive | string | Bark (effective when type=bark): Whether to archive (true/false, default false) |
-| telegramBotToken | string | Telegram bot (effective when type=telegramBot): Telegram bot token (format: botXXX:XXX) |
-| telegramBotUserId | string | Telegram bot (effective when type=telegramBot): Target user ID (numeric format) |
-| telegramBotProxyHost | string | Telegram bot (effective when type=telegramBot): Proxy host (if needed) |
-| telegramBotProxyPort | string | Telegram bot (effective when type=telegramBot): Proxy port (if needed) |
-| telegramBotProxyAuth | string | Telegram bot (effective when type=telegramBot): Proxy authentication info (user:pass) |
-| telegramBotApiHost | string | Telegram bot (effective when type=telegramBot): Custom API address (default: api.telegram.org) |
-| dingtalkBotToken | string | DingTalk bot (effective when type=dingtalkBot): DingTalk bot token (access_token in webhook) |
-| dingtalkBotSecret | string | DingTalk bot (effective when type=dingtalkBot): Signing secret (required when signing is enabled) |
-| weWorkBotKey | string | WeCom bot (effective when type=weWorkBot): WeCom bot webhook key (key=XXX) |
-| weWorkOrigin | string | WeCom bot (effective when type=weWorkBot): WeCom server address (default: https://qyapi.weixin.qq.com) |
-| weWorkAppKey | string | WeCom app (effective when type=weWorkApp): WeCom app credential (e.g., combination of corpid+corpsecret) |
-| aibotkKey | string | Aibotk (effective when type=aibotk): Aibotk key |
-| aibotkType | string | Aibotk (effective when type=aibotk): Bot type (e.g., wechat) |
-| aibotkName | string | Aibotk (effective when type=aibotk): Bot name |
-| iGotPushKey | string | iGot (effective when type=iGot): iGot push key (format: igot-XXX) |
-| pushPlusToken | string | PushPlus (effective when type=pushPlus): PushPlus token (required) |
-| pushPlusUser | string | PushPlus (effective when type=pushPlus): Target user ID (current user by default) |
-| pushPlusTemplate | string | PushPlus (effective when type=pushPlus): Message template (e.g., html/json) |
-| pushplusChannel | string | PushPlus (effective when type=pushPlus): Push channel (e.g., wechat/email) |
-| pushplusWebhook | string | PushPlus (effective when type=pushPlus): Custom webhook address |
-| pushplusCallbackUrl | string | PushPlus (effective when type=pushPlus): Callback address |
-| pushplusTo | string | PushPlus (effective when type=pushPlus): Target users (comma-separated for multiple) |
-| wePlusBotToken | string | WePlus bot (effective when type=wePlusBot): WePlus bot token |
-| wePlusBotReceiver | string | WePlus bot (effective when type=wePlusBot): Receiver ID |
-| wePlusBotVersion | string | WePlus bot (effective when type=wePlusBot): API version (e.g., v1) |
-| emailService | string | Email notification (effective when type=email): Email service (e.g., QQ/163/Gmail) |
-| emailUser | string | Email notification (effective when type=email): Sender email (e.g., user@example.com) |
-| emailPass | string | Email notification (effective when type=email): Email authorization code (not login password) |
-| emailTo | string | Email notification (effective when type=email): Recipient email (comma-separated for multiple) |
-| pushMeKey | string | PushMe (effective when type=pushMe): PushMe key |
-| pushMeUrl | string | PushMe (effective when type=pushMe): Self-hosted PushMe service address |
-| larkKey | string | Feishu (effective when type=feishu): Feishu bot webhook key (needs to be configured in Feishu backend) |
-| webhookHeaders | string | Webhook (effective when type=webhook): Request headers (JSON format string) |
-| webhookBody | string | Webhook (effective when type=webhook): Request body content (supports template variables) |
-| webhookUrl | string | Webhook (effective when type=webhook): Webhook address (required) |
-| webhookMethod | string | Webhook (effective when type=webhook): Request method (GET/POST/PUT, etc., default POST) |
-| webhookContentType | string | Webhook (effective when type=webhook): Content type (e.g., application/json) |
-| chronocatURL | string | Chronocat (effective when type=Chronocat): Chronocat service address (e.g., http://localhost:10086) |
-| chronocatQQ | string | Chronocat (effective when type=Chronocat): Target QQ number |
-| chronocatToken | string | Chronocat (effective when type=Chronocat): Access token |
-| ntfyUrl | string | Ntfy (effective when type=ntfy): Ntfy service address (default: https://ntfy.sh) |
-| ntfyTopic | string | Ntfy (effective when type=ntfy): Topic name (required) |
-| ntfyPriority | string | Ntfy (effective when type=ntfy): Priority (low/default/high/urgent) |
-| ntfyToken | string | Ntfy (effective when type=ntfy): Authentication token (if needed) |
-| ntfyUsername | string | Ntfy (effective when type=ntfy): Username (if needed) |
-| ntfyPassword | string | Ntfy (effective when type=ntfy): Password (if needed) |
-| ntfyActions | string | Ntfy (effective when type=ntfy): Action buttons (JSON format) |
-| wxPusherBotAppToken | string | WeChat push bot (effective when type=wxPusherBot): WeChat push app token (required) |
-| wxPusherBotTopicIds | string | WeChat push bot (effective when type=wxPusherBot): Topic IDs (comma-separated for multiple) |
-| wxPusherBotUids | string | WeChat push bot (effective when type=wxPusherBot): User UIDs (comma-separated for multiple) |
-
-**Response (Response)**
-
-| Field | Type | Description |
-|-------|------|-------------|
-| code | int32 | Response code |
-| message | string | Response message |
-
-## Data Structures
-
-### NotificationMode
-Notification method type enum values:
-
-| Enum Value | Description |
-|------------|-------------|
-| gotify | Gotify notification |
-| goCqHttpBot | Go-CQHttp QQ bot |
-| serverChan | ServerChan |
-| pushDeer | PushDeer |
-| bark | Bark |
-| chat | Generic chat notification |
-| telegramBot | Telegram bot |
-| dingtalkBot | DingTalk bot |
-| weWorkBot | WeCom bot |
-| weWorkApp | WeCom app |
-| aibotk | Aibotk notification |
-| iGot | iGot push |
-| pushPlus | PushPlus push |
-| wePlusBot | WePlus bot |
-| email | Email notification |
-| pushMe | PushMe push |
-| feishu | Feishu notification |
-| webhook | Webhook notification |
-| chronocat | Chronocat notification |
-| ntfy | Ntfy notification |
-| wxPusherBot | WeChat push bot |
+## Data types
 
 ### EnvItem
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| id | int32 | No | Environment ID |
-| name | string | No | Environment name |
-| value | string | No | Environment value |
-| remarks | string | No | Remarks |
-| status | int32 | No | Status |
-| position | int32 | No | Position |
-
-## Usage Examples
-
-### nodejs
-
-```javascript
-// Get environment list
-QLAPI.getEnvs({ searchValue: 'dddd' }).then((x) => {
-  console.log('getEnvs', x);
-});
+```typescript
+{
+  id?: number;
+  name?: string;
+  value?: string;
+  remarks?: string;
+  status?: number;
+  position?: string;
+}
 ```
 
-### python
+### CronItem
+
+```typescript
+{
+  id?: number;
+  command?: string;
+  schedule?: string;
+  name?: string;
+  labels: string[];
+  sub_id?: number;
+  extra_schedules: ExtraScheduleItem[];
+  task_before?: string;
+  task_after?: string;
+  status?: number;
+  log_path?: string;
+  pid?: number;
+  last_running_time?: string;
+  last_execution_time?: string;
+}
+```
+
+### ExtraScheduleItem
+
+```typescript
+{
+  schedule: string;
+}
+```
+
+### Response
+
+```typescript
+{
+  code: number;
+  message?: string;
+}
+```
+
+### EnvResponse
+
+```typescript
+{
+  code: number;
+  data: EnvItem;
+  message?: string;
+}
+```
+
+### EnvsResponse
+
+```typescript
+{
+  code: number;
+  data: EnvItem[];
+  message?: string;
+}
+```
+
+### CronResponse
+
+```typescript
+{
+  code: number;
+  data: CronItem;
+  message?: string;
+}
+```
+
+### CronsResponse
+
+```typescript
+{
+  code: number;
+  data: CronItem[];
+  message?: string;
+}
+```
+
+### CronDetailResponse
+
+```typescript
+{
+  code: number;
+  data: CronItem;
+  message?: string;
+}
+```
+
+The JavaScript client decodes `int64` as strings, including `position` and task time fields. Successful responses have `code: 200`; check the API code and handle call exceptions.
+
+## Notifications
+
+`systemNotify` requires `title` and `content`. Optional `notificationInfo` overrides panel notification settings; omit it to use the panel configuration.
+
+Supported `notificationInfo.type` values:
+
+`gotify`, `goCqHttpBot`, `serverChan`, `pushDeer`, `bark`, `chat`, `telegramBot`, `dingtalkBot`, `weWorkBot`, `weWorkApp`, `aibotk`, `iGot`, `pushPlus`, `wePlusBot`, `email`, `pushMe`, `feishu`, `webhook`, `chronocat`, `ntfy`, `wxPusherBot`, `wxPusherSpt`, `wpush`.
+
+Common fields: `gotifyUrl/gotifyToken/gotifyPriority` for Gotify, `telegramBotToken/telegramBotUserId` for Telegram, `larkKey/larkSecret` for Feishu, `wxPusherSptList` for WxPusher SPT, and `wpushApiKey/wpushChannel/wpushTopicCode` for WPush. See the [notification protocol](https://github.com/whyour/qinglong/blob/master/back/protos/api.proto) for the remaining fields.
+
+## Examples
+
+### JavaScript
+
+```javascript
+async function main() {
+  const envs = await QLAPI.getEnvs({ searchValue: 'EXAMPLE' });
+  console.log(envs.code);
+  const tasks = await QLAPI.getCrons({ searchValue: 'demo' });
+  console.log(tasks.code);
+  await QLAPI.systemNotify({ title: 'Demo', content: 'Task finished' });
+}
+
+main().catch(console.error);
+```
+
+### Python
 
 ```python
-# Get environment list
-print(QLAPI.getEnvs({ "searchValue": "dddd" }))
+result = QLAPI.getCrons({"searchValue": "demo"})
+print(result["code"])
+QLAPI.systemNotify({"title": "Demo", "content": "Task finished"})
 ```

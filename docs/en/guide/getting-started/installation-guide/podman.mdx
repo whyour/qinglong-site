@@ -1,17 +1,26 @@
 # Podman
 
+Install [Podman](https://podman.io/docs/installation). This example runs the container as root for Alpine crond:
+
 ```bash
-# https://podman.io/getting-started/installation
-podman run -dit \
+mkdir -p "$PWD/ql/data"
+sudo podman run -dit \
   --network bridge \
-  -v $PWD/ql/data:/ql/data \
-  # The 5700 after the colon is the default port, if QlPort is set, it needs to be the same as QlPort.
+  -v "$PWD/ql/data:/ql/data" \
   -p 5700:5700 \
-  # Deployment paths are not required, e.g. /test.
   -e QlBaseUrl="/" \
-  # Deployment port is not required, when using host mode, you can set the port after service startup, default 5700
   -e QlPort="5700" \
   --name qinglong \
   --hostname qinglong \
   docker.io/whyour/qinglong:latest
+```
+
+`QlBaseUrl` can specify a path prefix such as `/test`. `QlPort` defaults to `5700` and must match the right side of the port mapping. Open `http://localhost:5700` to initialize the panel.
+
+On SELinux hosts with mount permission errors, use `-v "$PWD/ql/data:/ql/data:Z"` when appropriate for your host policy. Non-root deployments should use the Debian image and verify user mapping and mount permissions.
+
+Inspect startup logs:
+
+```bash
+sudo podman logs --tail 100 qinglong
 ```

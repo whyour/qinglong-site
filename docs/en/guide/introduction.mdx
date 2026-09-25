@@ -2,23 +2,28 @@
 
 ## Positioning
 
-Timed task management platform supporting Python3, JavaScript, Shell, Typescript
+Timed task management platform supporting Python3, JavaScript, Shell, TypeScript
 
 ## Features
 
-- Support for multiple scripting languages (python3, javaScript, shell, typescript)
+- Support for multiple scripting languages (Python3, JavaScript, Shell, TypeScript)
 - Support online management of scripts, environment variables, configuration files
 - Support online view task log
 - Support second-level task setting
 - Support system level notification
 - Support dark mode
 - Support cell phone operation
+- Manage repository subscriptions, environment variables and dependencies
+- Inspect execution instances, task statistics and logs
+- Use the remote CLI, OpenAPI and in-script QLAPI
 
 ## Version
 
 ### docker
 
 The `latest` image is built on `alpine` and the `debian` image is built on `debian-slim`. If you need to use a dependency that is not supported by `alpine`, it is recommended that you use the `debian` image.
+
+For non-root execution, use the Debian image with `--user qinglong`; Alpine crond requires root. See [Docker deployment](/guide/getting-started/installation-guide/docker).
 
 ```bash
 docker pull whyour/qinglong:latest
@@ -27,11 +32,23 @@ docker pull whyour/qinglong:debian
 
 ### npm
 
-The npm version supports `debian/ubuntu/centos/alpine` systems and requires `node/python3` to be installed.
+The npm version supports `debian/ubuntu/alpine` systems and requires `node/npm/python3/pip3/pnpm` to be installed.
 
 ```bash
-npm i @whyour/qinglong
+npm install -g @whyour/qinglong
 ```
+
+## Remote CLI and Agent Skill
+
+The standalone `@whyour/qinglong-cli` npm package manages remote panels from terminals and automation workflows. It supports tasks, subscriptions, environment variables, scripts, JSON output and an Agent Skill. Requires Node.js 22.12 or newer.
+
+```bash
+npm install -g @whyour/qinglong-cli
+ql login --url https://ql.example.com
+ql task list --json
+```
+
+See the [CLI guide](/guide/user-guide/cli). The panel's command is also named `ql`; use a separate entrypoint on panel hosts. See [panel-internal tools](/guide/user-guide/local-cli) for local execution and maintenance.
 
 ## Try Qinglong
 

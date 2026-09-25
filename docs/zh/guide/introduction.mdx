@@ -2,23 +2,28 @@
 
 ## 定位
 
-支持 Python3、JavaScript、Shell、Typescript 的定时任务管理平台
+支持 Python3、JavaScript、Shell、TypeScript 的定时任务管理平台
 
 ## 功能特性
 
-- 支持多种脚本语言（python3、javaScript、shell、typescript）
+- 支持多种脚本语言（Python3、JavaScript、Shell、TypeScript）
 - 支持在线管理脚本、环境变量、配置文件
 - 支持在线查看任务日志
 - 支持秒级任务设置
 - 支持系统级通知
 - 支持暗黑模式
 - 支持手机端操作
+- 支持仓库订阅、环境变量和依赖管理
+- 支持运行实例、任务统计与日志查看
+- 支持远程 CLI、OpenAPI 与脚本内置 QLAPI
 
 ## 版本
 
 ### docker
 
 `latest` 镜像是基于 `alpine` 构建，`debian` 镜像是基于 `debian-slim` 构建。如果需要使用 `alpine` 不支持的依赖，建议使用 `debian` 镜像
+
+以非 root 用户运行时，请使用 Debian 镜像并指定 `--user qinglong`；Alpine 的 `crond` 需要 root 权限。详见 [Docker 部署](/guide/getting-started/installation-guide/docker)。
 
 ```bash
 docker pull whyour/qinglong:latest
@@ -27,11 +32,23 @@ docker pull whyour/qinglong:debian
 
 ### npm
 
-npm 版本支持 `debian/ubuntu/centos/alpine` 系统，需要自行安装 `node/python3`
+npm 版本支持 `debian/ubuntu/alpine` 系统，需要自行安装 `node/npm/python3/pip3/pnpm`
 
 ```bash
-npm i @whyour/qinglong
+npm install -g @whyour/qinglong
 ```
+
+## 远程 CLI 与 Agent Skill
+
+独立 npm 包 `@whyour/qinglong-cli` 用于从终端或自动化流程管理远程面板，支持任务、订阅、环境变量、脚本等资源，以及 JSON 输出和 Agent Skill。需要 Node.js 22.12 或更高版本。
+
+```bash
+npm install -g @whyour/qinglong-cli
+ql login --url https://ql.example.com
+ql task list --json
+```
+
+详见 [CLI 使用指南](/guide/user-guide/cli)。面板自带命令也叫 `ql`，在面板宿主机上请使用独立入口；本机执行与维护见[面板内部工具](/guide/user-guide/local-cli)。
 
 ## 尝试 Qinglong
 

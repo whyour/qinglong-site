@@ -1,3 +1,16 @@
 ---
 overview: true
 ---
+
+# API 概览
+
+青龙提供远程 HTTP OpenAPI 和面板脚本内的 `QLAPI`。远程接口使用 `/open` 前缀和 Bearer token；各资源页的基础路径相对于 `/open`。例如环境变量列表为 `GET /open/envs`。
+
+- [准备工作](./preparation)：创建应用、获取 token、发送请求。
+- [API 与 CLI 路由](./routes)：路由、命令、输入方式和下线接口。
+- [远程 CLI](/guide/user-guide/cli)：从终端或自动化流程管理面板。
+- [内置 API](/guide/user-guide/built-in-api)：在面板执行的脚本中使用 `QLAPI`。
+
+较旧面板可能不支持部分接口，请结合实际安装版本使用。
+
+成功的 JSON 响应通常包含 `{ code: 200, data: ... }`；部分操作仅返回 `code/message`，文件下载返回流。请同时检查 HTTP 状态和业务 `code`，不能仅凭 HTTP 200 判断成功。

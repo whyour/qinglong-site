@@ -262,9 +262,19 @@ PUT /notify
     wxPusherBotAppToken?: string, // 微信推送应用 Token（必填）
     wxPusherBotTopicIds?: string, // 主题 ID（多个用逗号分隔）
     wxPusherBotUids?: string,    // 用户 UID（多个用逗号分隔）
+
+    // OpeniLink / WPush
+    openiLinkAppToken?: string,
+    openiLinkHubUrl?: string,
+    openiLinkContextToken?: string,
+    wpushApiKey?: string,
+    wpushChannel?: string,
+    wpushTopicCode?: string,
   }
 }
-```mdx
+```
+
+```typescript
 enum NotificationMode {
   'gotify' = 'gotify',
   'goCqHttpBot' = 'goCqHttpBot',
@@ -287,9 +297,13 @@ enum NotificationMode {
   'chronocat' = 'Chronocat',
   'ntfy' = 'ntfy',
   'wxPusherBot' = 'wxPusherBot',
+  openiLink = 'openiLink',
+  wpush = 'wpush',
 }
 ```
 
+
+HTTP 通知枚举依据 [`back/data/notify.ts`](https://github.com/whyour/qinglong/blob/master/back/data/notify.ts)。它与脚本内置 gRPC API 的枚举不同，请勿混用；例如 HTTP 的 Chronocat 值为 `Chronocat`。
 
 ### 命令管理
 
@@ -308,6 +322,9 @@ PUT /command-run
 **响应头**
 - `Content-type: application/octet-stream`
 - `QL-Task-Pid: <进程ID>`
+- `QL-Task-Log: <日志相对路径>`
+
+响应体为持续输出的命令日志，任务结束时关闭流，不是 JSON 响应。
 
 #### 停止命令
 ```http
@@ -330,7 +347,7 @@ PUT /command-stop
 PUT /data/export
 ```
 
-导出系统数据。
+响应为压缩备份文件下载。可传入 JSON 请求体 `{"type":["scripts","config","log"]}` 追加这些数据目录。省略 `type` 或传空数组时，只导出 `db` 和 `upload`，不包含脚本、配置及日志；`base` 表示基础数据，不是额外目录。完整备份方式见[维护指南](../guide/user-guide/maintenance)。
 
 #### 导入数据
 ```http
@@ -340,6 +357,8 @@ PUT /data/import
 **请求**
 - Content-Type: `multipart/form-data`
 - 字段: `data` (文件)
+
+上传导出的 `data.tgz` 后，此接口只将备份解压到临时目录。确认导入成功后，调用 `PUT /open/system/reload`，请求体 `{"type":"data"}`，才会替换当前数据并重启服务。替换操作会清空现有数据目录，备份中未包含的目录不会保留；应用前应先备份当前数据。
 
 ### 日志管理
 
@@ -353,10 +372,13 @@ GET /log
 {
   startTime?: string,  // 开始时间
   endTime?: string,    // 结束时间
-  t?: string          // 类型
+  limit?: number,     // 最大读取字节数，整数 1–1048576，默认 1048576
+  t?: string          // 可选附加参数，不参与日志筛选
 }
 ```
 
+
+系统日志按日志文件创建日期筛选，起止时间分别扩展到当天开始和结束，省略时默认当天。响应体为原始日志文本，超出 `limit` 时保留所选日志末尾内容。响应头 `X-QL-Log-Total` 表示筛选日志的总字节数，`X-QL-Log-Truncated` 表示是否截断，`Content-Length` 为本次返回的字节数。此接口不使用普通日志 API 的 `offset/nextOffset` 分页结构。
 
 #### 删除系统日志
 ```http
@@ -376,3 +398,36 @@ DELETE /log
 - 文件操作使用异步 fs promises
 - 临时文件存储在配置的临时路径中
 - 日志文件包含时间戳格式：`YYYY-MM-DD-HH-mm-ss-SSS`
+
+## 客户端 IP 与代理
+
+| 方法 | 完整路径 | 说明 |
+| --- | --- | --- |
+| GET | `/open/system/client-ip/config` | 查询代理信任配置 |
+| PUT | `/open/system/client-ip/config` | 更新配置，请求体为 `{ "trustProxy": "..." }`，字符串最长 500 字符 |
+| GET | `/open/system/client-ip/diagnose` | 查看当前请求的客户端 IP 解析结果 |
+
+```bash
+ql system client-ip-get --json
+ql system client-ip-diagnose --json
+```
+
+## 数据保留与清理
+
+基础路径 `/open/system/storage-retention`：`PUT /config` 保存保留策略，`POST /preview` 预览清理范围，`POST /cleanup` 执行清理。
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `runningInstanceRetentionDays` | number | 必填，运行实例保留天数，整数 0–3650 |
+| `cronStatRetentionDays` | number | 必填，任务统计保留天数，整数 0–3650 |
+| `dependenceCacheTypes` | string[] | 预览/清理可选，`node`、`python3`，默认空数组 |
+| `compactDatabase` | boolean | 预览/清理可选，默认 false |
+| `confirmation` | string | 仅执行清理时必填，必须为 `CLEAN` |
+
+先预览所选策略的影响，再按需要提交清理。以下命令只预览：
+
+```bash
+ql system retention-preview --data '{"runningInstanceRetentionDays":30,"cronStatRetentionDays":90,"dependenceCacheTypes":[],"compactDatabase":false}' --json
+```
+
+其余系统接口与 CLI 命令对应关系见[路由参考](./routes)。

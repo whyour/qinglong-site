@@ -3,12 +3,23 @@ import { pluginFontOpenSans } from "rspress-plugin-font-open-sans";
 
 export default defineConfig({
   root: "docs",
-  title: "Qinglong",
-  description: "Qinglong Docs",
+  // Rspress 1.x gives global metadata priority over locale metadata.
+  title: "",
+  description: "",
   markdown: {
     checkDeadLinks: true,
   },
   lang: "zh",
+  locales: [
+    {
+      lang: "zh",
+      label: "简体中文",
+    },
+    {
+      lang: "en",
+      label: "English",
+    },
+  ],
   icon: "https://qn.whyour.cn/favicon.svg",
   logo: {
     light: "/logo-light.png",
@@ -29,8 +40,9 @@ export default defineConfig({
   },
   themeConfig: {
     enableContentAnimation: true,
+    enableScrollToTop: true,
     footer: {
-      message: "<p>© 2026 Qinglong Inc. All Rights Reserved.<a href='https://beian.miit.gov.cn/' style='margin-left: 4px' target='_blank'>京ICP备19049168号-4</a></p>",
+      message: `<p>© ${new Date().getFullYear()} Qinglong Inc. All Rights Reserved.<a href="https://beian.miit.gov.cn/" style="margin-left: 4px" target="_blank" rel="noopener noreferrer">京ICP备19049168号-4</a></p>`,
     },
     hideNavbar: "auto",
     socialLinks: [
@@ -52,9 +64,16 @@ export default defineConfig({
     locales: [
       {
         lang: "zh",
+        title: "青龙文档",
+        description: "青龙定时任务管理平台的部署、脚本、CLI 与 API 使用文档。",
         label: "简体中文",
+        overview: {
+          filterNameText: "筛选",
+          filterPlaceholderText: "搜索文档",
+          filterNoResultText: "未找到相关文档",
+        },
         editLink: {
-          docRepoBaseUrl: "https://github.com/whyour/qinglong-site/docs",
+          docRepoBaseUrl: "https://github.com/whyour/qinglong-site/edit/main/docs",
           text: "📝 在 GitHub 上编辑此页",
         },
         prevPageText: "上一篇",
@@ -66,9 +85,11 @@ export default defineConfig({
       },
       {
         lang: "en",
+        title: "Qinglong Docs",
+        description: "Deployment, scripts, CLI and API documentation for the Qinglong task management platform.",
         label: "English",
         editLink: {
-          docRepoBaseUrl: "https://github.com/whyour/qinglong-site/docs",
+          docRepoBaseUrl: "https://github.com/whyour/qinglong-site/edit/main/docs",
           text: "📝 Edit this page on GitHub",
         },
         searchPlaceholderText: "Search",

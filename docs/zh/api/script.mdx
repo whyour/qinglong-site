@@ -106,6 +106,8 @@ PUT /run
 }
 ```
 
+此接口用于调试传入的 `content`：它会生成并执行同目录下的临时文件（例如 `demo.js` 对应 `demo.swap.js`）。省略 `content` 会写入空内容，不会读取原脚本。要执行已保存的定时任务，请使用[定时任务 API](./crontab) 的 `PUT /open/crons/run`。
+
 ### 停止脚本
 ```http
 PUT /stop
@@ -144,3 +146,7 @@ PUT /rename
 - 文件路径安全检查
 - 支持文件备份
 - 临时文件自动清理
+
+## 已下线接口
+
+`GET /open/scripts/:file` 返回业务代码 `410`。请使用 `GET /open/scripts/detail`，通过 `file` 和可选 `path` 查询文件。

@@ -262,6 +262,14 @@ PUT /notify
     wxPusherBotAppToken?: string, // WxPusher app token (Required)
     wxPusherBotTopicIds?: string, // Topic IDs (comma-separated for multiple)
     wxPusherBotUids?: string,    // User UIDs (comma-separated for multiple)
+
+    // OpeniLink / WPush
+    openiLinkAppToken?: string,
+    openiLinkHubUrl?: string,
+    openiLinkContextToken?: string,
+    wpushApiKey?: string,
+    wpushChannel?: string,
+    wpushTopicCode?: string,
   }
 }
 ```
@@ -288,9 +296,13 @@ enum NotificationMode {
   chronocat = 'Chronocat',
   ntfy = 'ntfy',
   wxPusherBot = 'wxPusherBot',
+  openiLink = 'openiLink',
+  wpush = 'wpush',
 }
 ```
 
+
+HTTP notification values follow [`back/data/notify.ts`](https://github.com/whyour/qinglong/blob/master/back/data/notify.ts). They differ from the in-script gRPC enum; for example, the HTTP Chronocat value is `Chronocat`.
 
 ### Command Management
 
@@ -309,6 +321,9 @@ PUT /command-run
 **Response Headers**
 - `Content-type: application/octet-stream`
 - `QL-Task-Pid: <process_id>`
+- `QL-Task-Log: <relative_log_path>`
+
+The response streams command output and closes when the task finishes. It is not a JSON response.
 
 #### Stop Command
 ```http
@@ -331,7 +346,7 @@ PUT /command-stop
 PUT /data/export
 ```
 
-Exports system data.
+Returns a compressed backup download. Pass a JSON body such as `{"type":["scripts","config","log"]}` to include these additional data directories. Omitting `type` or passing an empty array exports only `db` and `upload`, excluding scripts, configuration and logs. `base` denotes the base data, not an extra directory. See the [maintenance guide](../guide/user-guide/maintenance) for a complete backup.
 
 #### Import Data
 ```http
@@ -341,6 +356,8 @@ PUT /data/import
 **Request**
 - Content-Type: `multipart/form-data`
 - Field: `data` (file)
+
+Upload the exported `data.tgz`. This endpoint only extracts the backup into the temporary directory. After a successful import, call `PUT /open/system/reload` with `{"type":"data"}` to replace the current data and restart the service. Replacement clears the existing data directory; directories absent from the backup are not retained. Back up current data before applying the import.
 
 ### Log Management
 
@@ -354,10 +371,13 @@ GET /log
 {
   startTime?: string,
   endTime?: string,
-  t?: string
+  limit?: number, // Integer byte limit: 1–1048576; default 1048576
+  t?: string     // Optional extra parameter; not used for filtering
 }
 ```
 
+
+Logs are filtered by file creation date. Start and end times expand to the beginning and end of their respective days; omitted values default to today. The response is raw log text. When it exceeds `limit`, the tail of the selected logs is returned. `X-QL-Log-Total` reports total matching bytes, `X-QL-Log-Truncated` indicates truncation, and `Content-Length` reports returned bytes. This endpoint does not use the regular Log API’s `offset/nextOffset` pagination structure.
 
 #### Delete System Logs
 ```http
@@ -377,3 +397,36 @@ All endpoints follow the same error handling pattern:
 - File operations use async fs promises
 - Temporary files are stored in configured tmp path
 - Log files include timestamps in format: `YYYY-MM-DD-HH-mm-ss-SSS`
+
+## Client IP and proxy configuration
+
+| Method | Full path | Description |
+| --- | --- | --- |
+| GET | `/open/system/client-ip/config` | Read trusted proxy configuration |
+| PUT | `/open/system/client-ip/config` | Update with `{ "trustProxy": "..." }`; maximum 500 characters |
+| GET | `/open/system/client-ip/diagnose` | Diagnose client IP resolution for this request |
+
+```bash
+ql system client-ip-get --json
+ql system client-ip-diagnose --json
+```
+
+## Retention and cleanup
+
+Under `/open/system/storage-retention`, `PUT /config` saves retention policy, `POST /preview` previews cleanup, and `POST /cleanup` performs cleanup.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `runningInstanceRetentionDays` | number | Required integer retention days, 0–3650 |
+| `cronStatRetentionDays` | number | Required integer retention days, 0–3650 |
+| `dependenceCacheTypes` | string[] | Optional for preview/cleanup: `node`, `python3`; default empty |
+| `compactDatabase` | boolean | Optional for preview/cleanup; default false |
+| `confirmation` | string | Required only for cleanup; must be `CLEAN` |
+
+Preview the selected policy before applying cleanup. This example only previews:
+
+```bash
+ql system retention-preview --data '{"runningInstanceRetentionDays":30,"cronStatRetentionDays":90,"dependenceCacheTypes":[],"compactDatabase":false}' --json
+```
+
+See the [route reference](./routes) for the remaining system endpoints and CLI commands.

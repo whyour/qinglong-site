@@ -1,19 +1,21 @@
 # 基础说明
 
+这些是默认的面板内置 Shell 命令，在面板宿主机或容器内执行。Docker 可先运行 `docker exec -it qinglong bash` 进入容器。远程管理请使用独立的 [npm CLI](./cli)，可选的 TypeScript 执行与维护入口见[面板内部工具](./local-cli)。
+
 ## 内置命令
 
 - task
 
 ```bash
 # 依次执行，如果设置了随机延迟，将随机延迟一定秒数
-task <file_path>                                             
-# 依次执行，无论是否设置了随机延迟，均立即运行，前台会输出日，同时记录在日志文件中
-task <file_path> now                                         
-# 并发执行，无论是否设置了随机延迟，均立即运行，前台不产生日，直接记录在日志文件中，且可指定账号执行
-task <file_path> conc <env_name> <account_number>(可选的) 
-# 指定账号执行，无论是否设置了随机延迟，均立即运行 
-task <file_path> desi <env_name> <account_number>      
-# 设置任务超时时间   
+task <file_path>
+# 依次执行，无论是否设置了随机延迟，均立即运行，前台会输出日志，同时记录在日志文件中
+task <file_path> now
+# 并发执行，无论是否设置了随机延迟，均立即运行，前台不输出日志，直接记录在日志文件中，且可指定账号执行
+task <file_path> conc <env_name> <account_number>(可选的)
+# 指定账号执行，无论是否设置了随机延迟，均立即运行
+task <file_path> desi <env_name> <account_number>
+# 设置任务超时时间
 task -m <max_time> <file_path>
 # 使用 -- 分割，-- 后面的参数会传给脚本，下面的例子，脚本就可接收到参数 -u whyour -p password
 task <file_path> -- -u whyour -p password
@@ -37,7 +39,7 @@ ql bot
 # 检测青龙环境并修复
 ql check
 # 重置登录错误次数
-ql resetlet                                                  
+ql resetlet
 # 禁用两步登录
 ql resettfa
 ```
@@ -61,7 +63,7 @@ git clone https://github.com/whyour/qinglong.git
 cd qinglong
 cp .env.example .env
 # 推荐使用 pnpm https://pnpm.io/zh/installation
-npm install -g pnpm
+npm install -g pnpm@8.3.1
 pnpm install
 pnpm start
 # 打开你的浏览器，访问 <http://127.0.0.1:5700>

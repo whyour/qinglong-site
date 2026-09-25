@@ -1,38 +1,42 @@
 ---
 pageType: home
+description: "青龙文档：部署定时任务管理面板，管理脚本与订阅，使用远程 CLI、OpenAPI 和内置 QLAPI。"
 
 hero:
   name: 青龙
   text: |
     定时任务管理平台
-  tagline: 支持多种脚本语言
+  tagline: 管理 Python、JavaScript、Shell 和 TypeScript 脚本，安排定时执行，在面板或终端查看运行结果。
   actions:
     - theme: brand
       text: 快速开始
-      link: /guide/getting-started/installation-guide
+      link: /guide/getting-started/first-task
     - theme: alt
-      text: Demo
-      link: http://demo.qinglong.online:4433/
+      text: CLI 使用指南
+      link: /guide/user-guide/cli
+    - theme: alt
+      text: 在线演示
+      link: https://demo.qinglong.online
   image:
     src: https://qn.whyour.cn/logo.png
     alt: Qinglong Logo
 features:
-  - title: 多平台支持
-    details: 提供通过 Docker 以及本机进行部署的灵活性，可根据用户环境选择最佳方式。
-    icon: 🌐
-  - title: 丰富的 API 接口
-    details: 提供丰富的 API 接口，使得用户能够通过编程方式进行任务管理和自动化操作，非常适合高级用户和开发者使用。
-    icon: 🔌
-  - title: 定时任务管理 
-    details: 强大的定时任务管理功能，用户可以自定义和调度各种任务，实现自动化和高效的工作流管理。
-    icon: ⏰
-  - title: 日志监控和分析
-    details: 详尽的日志记录和监控功能，帮助用户追踪任务的执行情况，及时发现和解决问题，提高系统的可靠性。
-    icon: 📊
-  - title: 多订阅管理
-    details: 订阅功能是一种自动化管理工具，能够帮助用户自动下载、更新和管理脚本仓库，生成对应定时任务
-    icon: 📦
-  - title: 依赖在线安装
-    details: 支持在线 Python/Node.js/Linux 依赖安装功能，为用户提供多种编程语言和系统环境下的自动化脚本管理支持
-    icon: 🔧
+  - title: "部署与初始化"
+    details: "使用 Docker、Compose、Podman 或 Linux 本机部署，完成初始化并运行第一个任务。<a class=\"ql-feature-link\" href=\"/guide/getting-started/installation-guide\">选择安装方式<span aria-hidden=\"true\"> →</span></a>"
+    icon: "📦"
+  - title: "定时任务"
+    details: "设置秒级定时规则，手动运行或停止任务，查看运行实例与执行日志。<a class=\"ql-feature-link\" href=\"/api/crontab\">了解任务管理<span aria-hidden=\"true\"> →</span></a>"
+    icon: "⏱️"
+  - title: "脚本与订阅"
+    details: "从仓库或单文件地址同步脚本，配置分支、筛选规则和自动添加任务。<a class=\"ql-feature-link\" href=\"/api/subscription\">了解订阅管理<span aria-hidden=\"true\"> →</span></a>"
+    icon: "🔄"
+  - title: "日志与运行统计"
+    details: "查看任务日志、运行中实例和排队状态，通过仪表盘了解执行次数与耗时。<a class=\"ql-feature-link\" href=\"/api/dashboard\">查看仪表盘说明<span aria-hidden=\"true\"> →</span></a>"
+    icon: "📊"
+  - title: "远程 CLI"
+    details: "在终端查询和运行任务、管理订阅，使用 JSON 输出接入自动化流程与 Agent。<a class=\"ql-feature-link\" href=\"/guide/user-guide/cli\">开始使用 CLI<span aria-hidden=\"true\"> →</span></a>"
+    icon: "⌘"
+  - title: "API 与脚本集成"
+    details: "通过 OpenAPI 管理环境变量、配置和依赖，或在脚本中使用内置 QLAPI。<a class=\"ql-feature-link\" href=\"/api/\">查看 API 文档<span aria-hidden=\"true\"> →</span></a>"
+    icon: "🔌"
 ---

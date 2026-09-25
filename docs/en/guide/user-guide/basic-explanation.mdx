@@ -1,21 +1,23 @@
 # Basic Explanation
 
+These are the default built-in Shell commands for the panel host or container. For Docker, enter the container with `docker exec -it qinglong bash`. See the separate [npm CLI](./cli) for remote management and [panel-internal tools](./local-cli) for optional TypeScript execution and maintenance.
+
 ## Built-in commands
 
 - task
 
 ```bash
 # Execute in sequence, if a random delay is set, it will be randomly delayed by a certain number of seconds
-task <file_path>                                             
-# Execute in sequence, regardless of whether a random delay is set, all run immediately, 
-# and the foreground will output the day, while recorded in the log file
-task <file_path> now                                         
-# Concurrent execution, regardless of whether a random delay is set, are run immediately, 
-# the foreground does not generate the day, directly recorded in the log file, and can be specified account execution
-task <file_path> conc <env_name> <account_number>(Optional) 
-# Specify the account to execute and run immediately regardless of whether a random delay is set 
-task <file_path> desi <env_name> <account_number>       
-# Set task timeout   
+task <file_path>
+# Execute in sequence, regardless of whether a random delay is set, all run immediately,
+# and the foreground will output logs, while recorded in the log file
+task <file_path> now
+# Concurrent execution, regardless of whether a random delay is set, are run immediately,
+# the foreground does not output logs, directly recorded in the log file, and can be specified account execution
+task <file_path> conc <env_name> <account_number>(Optional)
+# Specify the account to execute and run immediately regardless of whether a random delay is set
+task <file_path> desi <env_name> <account_number>
+# Set task timeout
 task -m <max_time> <file_path>
 # Use -- to split, -- followed by a parameter that is passed to the script, as in the following example, the script receives the parameter -u whyour -p password
 task <file_path> -- -u whyour -p password
@@ -24,24 +26,24 @@ task <file_path> -- -u whyour -p password
 - ql
 
 ```bash
-# Update and restart Green Dragon
-ql update                                                    
+# Update and restart Qinglong
+ql update
 # Run custom scripts extra.sh
-ql extra                                                     
+ql extra
 # Adding a single script file
-ql raw <file_url>                                             
+ql raw <file_url>
 # Add a specific script for a single repository
-ql repo <repo_url> <whitelist> <blacklist> <dependence> <branch>   
+ql repo <repo_url> <whitelist> <blacklist> <dependence> <branch> <extensions>
 # Delete old logs
-ql rmlog <days>                                              
+ql rmlog <days>
 # Start bot
-ql bot                                                       
-# Detecting the Green Dragon environment and repairing it
-ql check                                                     
+ql bot
+# Detecting the Qinglong environment and repairing it
+ql check
 # Reset the number of login errors
-ql resetlet                                                  
+ql resetlet
 # Disable two-step login
-ql resettfa                                                  
+ql resettfa
 ```
 
 | **Parameter** | **Description** |
@@ -51,10 +53,10 @@ ql resettfa
 | whitelist | The whitelist when pulling the repository, i.e., the string contained in the path of the script to be pulled |
 | blacklist | Blacklisting when pulling repositories, i.e. strings that are not included in the path of the script to be pulled |
 | dependence | Pulling the dependencies needed for the repository will be copied directly from the repository to the repository directory under scripts, regardless of the blacklist |
-| extensions | Pull the branch of the repository |
-| branch | Number of days of logs to be kept |
-| days | File path for task execution |
-| file_path | The name of the environment variable that needs to be concurrent or specified at the time of task execution |
+| extensions | File extensions to include, separated by pipes |
+| branch | Repository branch |
+| days | Number of days of logs to keep |
+| file_path | Path of the script to execute |
 
 ## Development
 
@@ -63,7 +65,7 @@ git clone https://github.com/whyour/qinglong.git
 cd qinglong
 cp .env.example .env
 # Recommended use pnpm https://pnpm.io/zh/installation
-npm install -g pnpm
+npm install -g pnpm@8.3.1
 pnpm install
 pnpm start
 # Open your browser and visit <http://127.0.0.1:5700>

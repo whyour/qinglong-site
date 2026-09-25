@@ -1,17 +1,33 @@
 # Docker
 
+Persist panel data at `/ql/data`. This command uses the Alpine image:
+
 ```bash
-# curl -sSL get.docker.com | sh
 docker run -dit \
-  -v $PWD/ql/data:/ql/data \
-  # The 5700 after the colon is the default port, if QlPort is set, it needs to be the same as QlPort.
+  -v "$PWD/ql/data:/ql/data" \
   -p 5700:5700 \
-  # Deployment paths are not required, e.g. /test.
   -e QlBaseUrl="/" \
-  # Deployment port is not required, when using host mode, you can set the port after service startup, default 5700
   -e QlPort="5700" \
   --name qinglong \
   --hostname qinglong \
   --restart unless-stopped \
   whyour/qinglong:latest
 ```
+
+Open `http://localhost:5700` to initialize the panel. `QlBaseUrl` is an optional deployment prefix such as `/test`. `QlPort` controls the listening port and defaults to `5700`; the right side of `-p` must match it.
+
+## Debian and non-root execution
+
+Use `whyour/qinglong:debian` for dependencies unsupported by Alpine or to run as a non-root user. Alpine's `crond` requires root. Ensure the mounted host directory is writable by the container's `qinglong` user before running:
+
+```bash
+docker run -dit \
+  -v "$PWD/ql/data:/ql/data" \
+  -p 5700:5700 \
+  --user qinglong \
+  --name qinglong \
+  --restart unless-stopped \
+  whyour/qinglong:debian
+```
+
+These are alternative configurations; do not create both with the same container name. After deployment, use the [remote CLI](/guide/user-guide/cli) for management or [built-in commands](/guide/user-guide/basic-explanation) for in-container execution.

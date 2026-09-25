@@ -11,6 +11,11 @@
   },
   {
     "type": "file",
+    "name": "routes",
+    "label": "api-routes"
+  },
+  {
+    "type": "file",
     "name": "crontab",
     "label": "crontab"
   },
@@ -48,5 +53,20 @@
     "type": "file",
     "name": "system",
     "label": "system"
+  },
+  {
+    "type": "file",
+    "name": "dashboard",
+    "label": "dashboard"
+  },
+  {
+    "type": "file",
+    "name": "open",
+    "label": "application"
+  },
+  {
+    "type": "file",
+    "name": "user",
+    "label": "user"
   }
 ]

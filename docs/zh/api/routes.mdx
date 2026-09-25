@@ -1,0 +1,232 @@
+# API 与 CLI 路由参考
+
+本页列出 HTTP API 与 CLI 命令的对应关系。表中 HTTP 路径包含 `/open` 前缀；认证见[准备工作](./preparation)，安装与示例见[远程 CLI](/guide/user-guide/cli)。
+
+CLI 注册了 143 条路由，可运行 `ql api routes --json` 查看。后端另有动态注册的 `GET /open/dashboard/successes` 和 `GET /open/dashboard/failures`，当前 CLI 未收录，`api request` 也不能调用；请使用 HTTP 客户端，见[仪表盘](./dashboard)。不要把 CLI 路由数量当作全部后端接口数量。
+
+## 输入约定
+
+- 下表展示命令的位置参数。请求体使用 `--data`，查询使用 `--query`，均支持 JSON、`@file` 或标准输入 `-`。
+- `--file` 上传文件，`--output` 下载到一个尚不存在的文件。
+- `task run/stop` 和 `subscription run/stop/enable/disable` 的命名命令仅接受单个 ID；批量使用 `ql api request` 并提供 ID 数组。
+- 既有命令的查询选项以 `--help` 为准，完整查询参数可通过 `api request --query` 提交。`auth login` 应使用 `ql login --url ...`，不要在查询参数示例中写入密钥。
+- `task update` 必须包含 `command/schedule`；`subscription update` 必须包含 `type/url/alias`。位置 ID 会注入请求体，不会自动读取并合并现有对象。
+- 需要相应资源权限；路由存在不表示应用已获授权。JSON 的业务 `code` 与 HTTP 状态都需要检查。下载接口直接返回文件流。
+
+## crons
+
+| 命令 | 方法 | 路径 | 请求输入 |
+| --- | --- | --- | --- |
+| `ql task view-list` | GET | `/open/crons/views` | --query |
+| `ql task view-create` | POST | `/open/crons/views` | --data, --query |
+| `ql task view-update <id>` | PUT | `/open/crons/views` | --data, --query |
+| `ql task view-delete <id...>` | DELETE | `/open/crons/views` | ID 数组, --query |
+| `ql task view-move` | PUT | `/open/crons/views/move` | --data, --query |
+| `ql task view-disable <id...>` | PUT | `/open/crons/views/disable` | ID 数组, --query |
+| `ql task view-enable <id...>` | PUT | `/open/crons/views/enable` | ID 数组, --query |
+| `ql task list` | GET | `/open/crons` | 查询见 --help / api request |
+| `ql task detail` | GET | `/open/crons/detail` | --query |
+| `ql task create` | POST | `/open/crons` | --data, --query |
+| `ql task run <id>` | PUT | `/open/crons/run` | ID 数组, 查询见 --help / api request |
+| `ql task stop <id>` | PUT | `/open/crons/stop` | ID 数组, 查询见 --help / api request |
+| `ql task labels-delete` | DELETE | `/open/crons/labels` | --data, --query |
+| `ql task labels-create` | POST | `/open/crons/labels` | --data, --query |
+| `ql task disable <id...>` | PUT | `/open/crons/disable` | ID 数组, --query |
+| `ql task enable <id...>` | PUT | `/open/crons/enable` | ID 数组, --query |
+| `ql task logs <id>` | GET | `/open/crons/:id/log` | 查询见 --help / api request |
+| `ql task update <id>` | PUT | `/open/crons` | --data, --query |
+| `ql task delete <id...>` | DELETE | `/open/crons` | ID 数组, --query |
+| `ql task pin <id...>` | PUT | `/open/crons/pin` | ID 数组, --query |
+| `ql task unpin <id...>` | PUT | `/open/crons/unpin` | ID 数组, --query |
+| `ql task import` | GET | `/open/crons/import` | --query |
+| `ql task get <id>` | GET | `/open/crons/:id` | 查询见 --help / api request |
+| `ql task status` | PUT | `/open/crons/status` | --data, --query |
+| `ql task instances <id>` | GET | `/open/crons/:id/instances` | --query |
+| `ql task instance-stop <id> <instanceId>` | POST | `/open/crons/:id/instances/:instanceId/stop` | --query |
+| `ql task log-files <id>` | GET | `/open/crons/:id/logs` | --query |
+
+## subscriptions
+
+| 命令 | 方法 | 路径 | 请求输入 |
+| --- | --- | --- | --- |
+| `ql subscription list` | GET | `/open/subscriptions` | 查询见 --help / api request |
+| `ql subscription create` | POST | `/open/subscriptions` | --data, --query |
+| `ql subscription run <id>` | PUT | `/open/subscriptions/run` | ID 数组, 查询见 --help / api request |
+| `ql subscription stop <id>` | PUT | `/open/subscriptions/stop` | ID 数组, 查询见 --help / api request |
+| `ql subscription disable <id>` | PUT | `/open/subscriptions/disable` | ID 数组, 查询见 --help / api request |
+| `ql subscription enable <id>` | PUT | `/open/subscriptions/enable` | ID 数组, 查询见 --help / api request |
+| `ql subscription logs <id>` | GET | `/open/subscriptions/:id/log` | 查询见 --help / api request |
+| `ql subscription update <id>` | PUT | `/open/subscriptions` | --data, --query |
+| `ql subscription delete <id...>` | DELETE | `/open/subscriptions` | ID 数组, --query |
+| `ql subscription get <id>` | GET | `/open/subscriptions/:id` | 查询见 --help / api request |
+| `ql subscription status` | PUT | `/open/subscriptions/status` | --data, --query |
+| `ql subscription log-files <id>` | GET | `/open/subscriptions/:id/logs` | --query |
+
+## apps
+
+| 命令 | 方法 | 路径 | 请求输入 |
+| --- | --- | --- | --- |
+| `ql app list` | GET | `/open/apps` | --query |
+| `ql app create` | POST | `/open/apps` | --data, --query |
+| `ql app update <id>` | PUT | `/open/apps` | --data, --query |
+| `ql app delete <id...>` | DELETE | `/open/apps` | ID 数组, --query |
+| `ql app reset-secret <id>` | PUT | `/open/apps/:id/reset-secret` | --query |
+
+## auth
+
+| 命令 | 方法 | 路径 | 请求输入 |
+| --- | --- | --- | --- |
+| `ql auth login` | GET | `/open/auth/token` | 查询见 --help / api request |
+
+## envs
+
+| 命令 | 方法 | 路径 | 请求输入 |
+| --- | --- | --- | --- |
+| `ql env list` | GET | `/open/envs` | --query |
+| `ql env create` | POST | `/open/envs` | --data, --query |
+| `ql env update <id>` | PUT | `/open/envs` | --data, --query |
+| `ql env delete <id...>` | DELETE | `/open/envs` | ID 数组, --query |
+| `ql env move <id>` | PUT | `/open/envs/:id/move` | --data, --query |
+| `ql env disable <id...>` | PUT | `/open/envs/disable` | ID 数组, --query |
+| `ql env enable <id...>` | PUT | `/open/envs/enable` | ID 数组, --query |
+| `ql env rename` | PUT | `/open/envs/name` | --data, --query |
+| `ql env get <id>` | GET | `/open/envs/:id` | --query |
+| `ql env pin <id...>` | PUT | `/open/envs/pin` | ID 数组, --query |
+| `ql env unpin <id...>` | PUT | `/open/envs/unpin` | ID 数组, --query |
+| `ql env labels-create` | POST | `/open/envs/labels` | --data, --query |
+| `ql env labels-delete` | DELETE | `/open/envs/labels` | --data, --query |
+| `ql env upload` | POST | `/open/envs/upload` | --data, --file (env), --query |
+
+## configs
+
+| 命令 | 方法 | 路径 | 请求输入 |
+| --- | --- | --- | --- |
+| `ql config samples` | GET | `/open/configs/samples` | --query |
+| `ql config list` | GET | `/open/configs/files` | --query |
+| `ql config get` | GET | `/open/configs/detail` | --query |
+| `ql config save` | POST | `/open/configs/save` | --data, --query |
+
+## scripts
+
+| 命令 | 方法 | 路径 | 请求输入 |
+| --- | --- | --- | --- |
+| `ql script list` | GET | `/open/scripts` | --query |
+| `ql script get` | GET | `/open/scripts/detail` | --query |
+| `ql script create` | POST | `/open/scripts` | --data, --file (file), --query |
+| `ql script update` | PUT | `/open/scripts` | --data, --file (file), --query |
+| `ql script delete` | DELETE | `/open/scripts` | --data, --query |
+| `ql script download` | POST | `/open/scripts/download` | --data, --output, --query |
+| `ql script run` | PUT | `/open/scripts/run` | --data, --query |
+| `ql script stop` | PUT | `/open/scripts/stop` | --data, --query |
+| `ql script rename` | PUT | `/open/scripts/rename` | --data, --query |
+
+## logs
+
+| 命令 | 方法 | 路径 | 请求输入 |
+| --- | --- | --- | --- |
+| `ql log list` | GET | `/open/logs` | --query |
+| `ql log get` | GET | `/open/logs/detail` | --query |
+| `ql log delete` | DELETE | `/open/logs` | --data, --query |
+| `ql log download` | POST | `/open/logs/download` | --data, --output, --query |
+
+## dependencies
+
+| 命令 | 方法 | 路径 | 请求输入 |
+| --- | --- | --- | --- |
+| `ql dependency list` | GET | `/open/dependencies` | --query |
+| `ql dependency create` | POST | `/open/dependencies` | --data, --query |
+| `ql dependency update <id>` | PUT | `/open/dependencies` | --data, --query |
+| `ql dependency delete <id...>` | DELETE | `/open/dependencies` | ID 数组, --query |
+| `ql dependency force-delete <id...>` | DELETE | `/open/dependencies/force` | ID 数组, --query |
+| `ql dependency get <id>` | GET | `/open/dependencies/:id` | --query |
+| `ql dependency reinstall <id...>` | PUT | `/open/dependencies/reinstall` | ID 数组, --query |
+| `ql dependency cancel <id...>` | PUT | `/open/dependencies/cancel` | ID 数组, --query |
+
+## system
+
+| 命令 | 方法 | 路径 | 请求输入 |
+| --- | --- | --- | --- |
+| `ql system info` | GET | `/open/system` | --query |
+| `ql system config-get` | GET | `/open/system/config` | --query |
+| `ql system config-log-remove-frequency` | PUT | `/open/system/config/log-remove-frequency` | --data, --query |
+| `ql system config-cron-concurrency` | PUT | `/open/system/config/cron-concurrency` | --data, --query |
+| `ql system config-dependence-proxy` | PUT | `/open/system/config/dependence-proxy` | --data, --query |
+| `ql system config-node-mirror` | PUT | `/open/system/config/node-mirror` | --data, --query |
+| `ql system config-python-mirror` | PUT | `/open/system/config/python-mirror` | --data, --query |
+| `ql system config-linux-mirror` | PUT | `/open/system/config/linux-mirror` | --data, --query |
+| `ql system update-check` | PUT | `/open/system/update-check` | --query |
+| `ql system update` | PUT | `/open/system/update` | --query |
+| `ql system reload` | PUT | `/open/system/reload` | --data, --query |
+| `ql system notify` | PUT | `/open/system/notify` | --data, --query |
+| `ql system command-run` | PUT | `/open/system/command-run` | --data, --output, --query |
+| `ql system command-stop` | PUT | `/open/system/command-stop` | --data, --query |
+| `ql system data-export` | PUT | `/open/system/data/export` | --data, --output, --query |
+| `ql system data-import` | PUT | `/open/system/data/import` | --data, --file (data), --query |
+| `ql system logs` | GET | `/open/system/log` | --query |
+| `ql system logs-delete` | DELETE | `/open/system/log` | --query |
+| `ql system auth-reset` | PUT | `/open/system/auth/reset` | --data, --query |
+| `ql system config-timezone` | PUT | `/open/system/config/timezone` | --data, --query |
+| `ql system config-lang` | PUT | `/open/system/config/lang` | --data, --query |
+| `ql system config-panel-title` | PUT | `/open/system/config/panel-title` | --data, --query |
+| `ql system config-global-ssh-key` | PUT | `/open/system/config/global-ssh-key` | --data, --query |
+| `ql system config-dependence-clean` | PUT | `/open/system/config/dependence-clean` | --data, --query |
+| `ql system client-ip-get` | GET | `/open/system/client-ip/config` | --query |
+| `ql system client-ip-set` | PUT | `/open/system/client-ip/config` | --data, --query |
+| `ql system client-ip-diagnose` | GET | `/open/system/client-ip/diagnose` | --query |
+| `ql system retention-set` | PUT | `/open/system/storage-retention/config` | --data, --query |
+| `ql system retention-preview` | POST | `/open/system/storage-retention/preview` | --data, --query |
+| `ql system retention-cleanup` | POST | `/open/system/storage-retention/cleanup` | --data, --query |
+
+## dashboard
+
+| 命令 | 方法 | 路径 | 请求输入 |
+| --- | --- | --- | --- |
+| `ql dashboard record` | POST | `/open/dashboard/record` | --data, --query |
+| `ql dashboard overview` | GET | `/open/dashboard/overview` | --query |
+| `ql dashboard trend` | GET | `/open/dashboard/trend` | --query |
+| `ql dashboard top-time` | GET | `/open/dashboard/top-time` | --query |
+| `ql dashboard top-count` | GET | `/open/dashboard/top-count` | --query |
+| `ql dashboard runtime` | GET | `/open/dashboard/runtime` | --query |
+| `ql dashboard labels` | GET | `/open/dashboard/labels` | --query |
+| `ql dashboard system` | GET | `/open/dashboard/system` | --query |
+
+## user
+
+| 命令 | 方法 | 路径 | 请求输入 |
+| --- | --- | --- | --- |
+| `ql user login` | POST | `/open/user/login` | --data, --query |
+| `ql user logout` | POST | `/open/user/logout` | --query |
+| `ql user update` | PUT | `/open/user` | --data, --query |
+| `ql user get` | GET | `/open/user` | --query |
+| `ql user two-factor-init` | GET | `/open/user/two-factor/init` | --query |
+| `ql user two-factor-active` | PUT | `/open/user/two-factor/active` | --data, --query |
+| `ql user two-factor-deactivate` | PUT | `/open/user/two-factor/deactivate` | --query |
+| `ql user two-factor-login` | PUT | `/open/user/two-factor/login` | --data, --query |
+| `ql user login-log` | GET | `/open/user/login-log` | --query |
+| `ql user ip-blacklist` | GET | `/open/user/ip-blacklist` | --query |
+| `ql user ip-blacklist-set` | PUT | `/open/user/ip-blacklist` | --data, --query |
+| `ql user ip-blacklist-delete` | DELETE | `/open/user/ip-blacklist` | --data, --query |
+| `ql user notification-get` | GET | `/open/user/notification` | --query |
+| `ql user notification-set` | PUT | `/open/user/notification` | --data, --query |
+| `ql user init` | PUT | `/open/user/init` | --data, --query |
+| `ql user notification-init` | PUT | `/open/user/notification/init` | --data, --query |
+| `ql user avatar` | PUT | `/open/user/avatar` | --data, --file (avatar), --query |
+
+## update
+
+| 命令 | 方法 | 路径 | 请求输入 |
+| --- | --- | --- | --- |
+| `ql system apply-reload` | PUT | `/open/update/reload` | --query |
+| `ql system apply-system` | PUT | `/open/update/system` | --query |
+| `ql system apply-data` | PUT | `/open/update/data` | --query |
+
+## health
+
+| 命令 | 方法 | 路径 | 请求输入 |
+| --- | --- | --- | --- |
+| `ql health get` | GET | `/open/health` | --query |
+
+## 已下线接口
+
+`GET /open/configs/:file`、`GET /open/scripts/:file` 和 `GET /open/logs/:file` 返回业务代码 `410`，不在 CLI 路由表中。请改用对应的 `/detail` 接口或 `ql config get`、`ql script get`、`ql log get`。
+

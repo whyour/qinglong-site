@@ -1,0 +1,47 @@
+# Maintenance and troubleshooting
+
+These examples use the [Compose deployment](../getting-started/installation-guide/docker-compose). Run commands from the directory containing `compose.yaml`, with service `qinglong` and data directory `./data`. Substitute actual names and paths for other installations.
+
+## Back up before upgrading
+
+Back up the entire persistent data directory, including databases, scripts, configuration and logs. Stop the panel before archiving to avoid copying a database while it is being written:
+
+```bash
+docker compose stop qinglong
+sudo tar -czf "qinglong-data-$(date +%Y%m%d-%H%M%S).tar.gz" data
+docker compose start qinglong
+```
+
+Confirm that archiving succeeded before upgrading. Backups may contain account information, application secrets and environment values; keep them in controlled storage. Record the current image version or digest and copy the backup to separate storage.
+
+## Upgrade the image
+
+```bash
+docker compose pull qinglong
+docker compose up -d qinglong
+docker compose logs --tail 100 qinglong
+```
+
+Verify sign-in, script directories, tasks and logs. To pin a version, select a published image tag or digest in `compose.yaml` before updating.
+
+An image downgrade alone is not a complete rollback: newer versions may change data structures. Restore a matching image and data backup together.
+
+## Restore a backup
+
+Stop the panel and move the current `data` directory aside. Extract the backup into the deployment directory so the resulting structure remains `./data/...`. Check ownership and permissions for the runtime user, then start the panel. Do not overwrite a running database with backup files.
+
+Test restores in an isolated environment first, with scheduled tasks disabled or external services disconnected to avoid duplicate real executions.
+
+## Common problems
+
+| Symptom | Checks |
+| --- | --- |
+| Panel is unreachable | Run `docker compose ps` and `docker compose logs --tail 100 qinglong`; check port mapping, `QlPort`, proxy prefix and firewall |
+| Script not found | Check the path in Script Management; use `task folder/hello.js` for subdirectories |
+| Missing Node/Python module | Install the dependency under the correct language in Dependency Management; inspect installation logs before retrying |
+| Schedule does not fire | Check whether the task is enabled, its schedule and timezone, queue state and running instances |
+| Data mount is not writable | Check host directory permissions, container user and SELinux settings; see [Docker non-root guidance](../getting-started/installation-guide/docker) |
+| CLI returns 401/403 | Check credentials/token validity and run `ql auth status --scope crons --json` for the target module; verify environment tokens are not overriding saved credentials |
+| Unknown `ql` command | Use `command -v ql` and `ql --help` to distinguish the [remote CLI](./cli) from [internal tools](./local-cli) |
+
+`ql check` installs dependencies, repairs the environment and reloads services. Start diagnosis with logs and configuration. Remove tokens, environment values and private repository credentials before sharing logs.

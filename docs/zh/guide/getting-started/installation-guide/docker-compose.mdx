@@ -1,12 +1,43 @@
 # Docker Compose
 
-```bash
-#  curl -L https://github.com/docker/compose/releases/download/1.16.1/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
-mkdir qinglong
-wget https://raw.githubusercontent.com/whyour/qinglong/master/docker/docker-compose.yml
+先安装 Docker 和 [Compose 插件](https://docs.docker.com/compose/install/)，确认 `docker compose version` 可用。创建并进入部署目录：
 
-# 启动
-docker-compose up -d
-# 停止
-docker-compose down
+```bash
+mkdir -p qinglong
+cd qinglong
 ```
+
+在该目录保存以下 `compose.yaml`：
+
+```yaml
+services:
+  qinglong:
+    image: whyour/qinglong:latest
+    container_name: qinglong
+    hostname: qinglong
+    restart: unless-stopped
+    ports:
+      - "5700:5700"
+    volumes:
+      - ./data:/ql/data
+    environment:
+      QlBaseUrl: "/"
+      QlPort: "5700"
+```
+
+```bash
+docker compose config
+docker compose up -d
+docker compose logs --tail 100 qinglong
+```
+
+访问 `http://localhost:5700`；远程服务器请将 localhost 替换为服务器地址。数据保存在部署目录的 `data` 中。需要 Debian 镜像或非 root 运行时，参考 [Docker 部署](./docker)。
+
+停止和重新启动（在同一个部署目录执行）：
+
+```bash
+docker compose stop
+docker compose start
+```
+
+首次使用请继续[创建第一个任务](../first-task)，后续维护见[升级与备份](../../user-guide/maintenance)。

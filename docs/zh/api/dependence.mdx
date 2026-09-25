@@ -23,7 +23,7 @@ POST /
   {
     name: string,    // 依赖名称
     type: number,    // 依赖类型
-    remark: string   // 备注（可选）
+    remark?: string   // 备注（可选）
   }
 ]
 ```
@@ -39,7 +39,7 @@ PUT /
   id: number,      // 依赖ID
   name: string,    // 依赖名称
   type: number,    // 依赖类型
-  remark: string   // 备注（可选）
+  remark?: string   // 备注（可选）
 }
 ```
 
@@ -98,3 +98,17 @@ number[]  // 依赖ID数组
 ## 注意事项
 - 使用 celebrate/Joi 进行参数验证
 - 支持批量操作（删除、重装、取消等）
+
+## 权限与筛选
+
+完整基础路径为 `/open/dependencies`，应用需要 `dependencies` 权限。列表接口支持可选查询参数 `searchValue`、`type`、`status`，通过 URL 查询字符串传入。
+
+依赖类型 `type`：`0` 为 Node.js，`1` 为 Python3，`2` 为 Linux 系统依赖。创建和更新时为数字；创建请求体为对象数组，更新需要 `id/name/type`。
+
+列表筛选的 `type` 使用枚举名称 `nodejs`、`python3`、`linux`，与创建、更新请求体中的数字不同。`status` 可用逗号分隔多个状态，例如 `"2,5"`。
+
+状态 `status`：`0` 安装中、`1` 已安装、`2` 安装失败、`3` 删除中、`4` 已删除、`5` 删除失败、`6` 排队中、`7` 已取消。创建或重装请求成功不表示依赖已经安装完成，应继续检查状态和安装日志。
+
+```bash
+ql dependency list --query '{"type":"nodejs","status":"2"}' --json
+```

@@ -7,7 +7,7 @@
 
 ### Get Sample Files List
 ```http
-GET /sample
+GET /samples
 ```
 
 Get the list of predefined sample configuration files.
@@ -75,12 +75,9 @@ POST /save
 }
 ```
 
-### Get Specific File
-```http
-GET /:file
-```
+### Retired endpoint
 
-Get the content of a configuration file by its name.
+`GET /:file` returns API code `410`. Use `GET /open/configs/detail?path=config.sh` or `ql config get --query '{"path":"config.sh"}'` instead.
 
 ## Error Handling
 - All endpoints follow unified error handling mechanism

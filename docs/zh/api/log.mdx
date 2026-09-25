@@ -1,46 +1,42 @@
-# 日志 API 文档
+# 日志 API
 
-## 基础路径
-`/logs`
+基础路径：`/open/logs`。需要 `logs` 权限。
 
-## 接口列表
+| 方法 | 路径 | 用途 |
+| --- | --- | --- |
+| GET | `/` | 日志目录列表 |
+| GET | `/detail` | 分块读取日志 |
+| DELETE | `/` | 删除日志文件或目录 |
+| POST | `/download` | 下载日志文件 |
 
-### 获取日志列表
-```http
-GET /
+## 读取日志
+
+`GET /open/logs/detail` 的查询参数：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `file` | string | 必填，文件名 |
+| `path` | string | 可选，相对日志目录路径 |
+| `offset` | number | 可选，非负整数，字节偏移 |
+| `limit` | number | 可选，正整数，最多 1048576 字节；默认 262144 |
+| `tail` | boolean | 可选，为 true 时读取文件尾部；未提供 offset 时也默认读取尾部 |
+
+响应包含日志文本 `data`、字节位置 `offset/nextOffset`、总字节数 `total` 和是否截断 `truncated`。有运行中的实例时附带 `logStatus: "running"`。继续读取时使用 `nextOffset`，不要按文本字符数计算偏移。
+
+```bash
+ql log get --query '{"path":"demo","file":"example.log","offset":0,"limit":262144}' --json
 ```
 
-获取所有可访问的日志文件列表（排除黑名单文件）。
+## 删除与下载
 
-### 获取日志详情
-```http
-GET /detail
+两个接口的请求体均使用 `filename`（不是查询参数的 `file`）和 `path`；删除还支持可选 `type`。路径必须位于面板日志目录内，受限路径返回业务代码 `403`。
+
+```json
+{"filename":"example.log","path":"demo"}
 ```
 
-**查询参数**
-```typescript
-{
-  path?: string,  // 日志路径
-  file?: string   // 文件名
-}
+```bash
+ql log download --data '{"filename":"example.log","path":"demo"}' --output ./example.log --json
 ```
 
-**响应**
-- 成功返回日志内容
-- 访问受限返回 403 错误
-
-### 获取指定日志文件
-```http
-GET /:file
-```
-
-**查询参数**
-```typescript
-{
-  path?: string  // 日志路径
-}
-```
-
-**响应**
-- 成功返回日志内容
-- 访问受限返回
+下载返回文件流。旧接口 `GET /open/logs/:file` 已下线，返回业务代码 `410`，请改用 `/detail`。

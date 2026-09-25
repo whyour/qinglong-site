@@ -1,72 +1,42 @@
-# Logs API Documentation
+# Log API
 
-## Base Path
-`/logs`
+Base path: `/open/logs`. Requires the `logs` scope.
 
-## Endpoints
+| Method | Path | Purpose |
+| --- | --- | --- |
+| GET | `/` | List log directories |
+| GET | `/detail` | Read a log chunk |
+| DELETE | `/` | Delete a log file or directory |
+| POST | `/download` | Download a log file |
 
-### Get Logs List
-```http
-GET /
+## Read logs
+
+Query parameters for `GET /open/logs/detail`:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `file` | string | Required filename |
+| `path` | string | Optional relative log directory |
+| `offset` | number | Optional non-negative integer byte offset |
+| `limit` | number | Optional positive integer, at most 1048576 bytes; default 262144 |
+| `tail` | boolean | Read the file tail when true; omitting offset also defaults to the tail |
+
+The response contains text in `data`, byte positions `offset/nextOffset`, total bytes in `total`, and `truncated`. An active instance adds `logStatus: "running"`. Continue reading with `nextOffset`, not a character count.
+
+```bash
+ql log get --query '{"path":"demo","file":"example.log","offset":0,"limit":262144}' --json
 ```
 
-Get list of all accessible log files (excluding blacklisted files).
+## Delete and download
 
-### Get Log Details
-```http
-GET /detail
+Both request bodies use `filename` (not the query field `file`) and `path`; deletion also accepts optional `type`. Paths must remain inside the panel log directory. Restricted paths return API code `403`.
+
+```json
+{"filename":"example.log","path":"demo"}
 ```
 
-**Query Parameters**
-```typescript
-{
-  path?: string,  // Log path
-  file?: string   // File name
-}
+```bash
+ql log download --data '{"filename":"example.log","path":"demo"}' --output ./example.log --json
 ```
 
-**Response**
-- Returns log content on success
-- Returns 403 error for restricted access
-
-### Get Specific Log File
-```http
-GET /:file
-```
-
-**Query Parameters**
-```typescript
-{
-  path?: string  // Log path
-}
-```
-
-**Response**
-- Returns log content on success
-- Returns 403 error for restricted access
-
-### Delete Log
-```http
-DELETE /
-```
-
-**Request Body**
-```typescript
-{
-  filename: string,  // File name
-  path: string,     // File path
-  type?: string     // Type (optional)
-}
-```
-
-## Error Handling
-- All endpoints follow unified error handling mechanism
-- Successful responses return `{ code: 200, data: ... }`
-- Error logging is handled by Winston logger
-- Access to blacklisted files returns 403 error
-
-## Notes
-- Parameter validation using celebrate/Joi
-- Blacklisted files (e.g., .tmp) are not accessible
-- All paths must be within configured log directory
-- Supports security checks for file paths and contents
+Downloads return file streams. The retired `GET /open/logs/:file` endpoint returns API code `410`; use `/detail`.

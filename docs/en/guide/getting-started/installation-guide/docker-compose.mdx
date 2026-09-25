@@ -1,12 +1,43 @@
 # Docker Compose
 
-```bash
-# curl -L https://github.com/docker/compose/releases/download/1.16.1/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
-mkdir qinglong
-wget https://raw.githubusercontent.com/whyour/qinglong/master/docker/docker-compose.yml
+Install Docker and the [Compose plugin](https://docs.docker.com/compose/install/), and verify `docker compose version`. Create and enter a deployment directory:
 
-# start
-docker-compose up -d
-# stop
-docker-compose down
+```bash
+mkdir -p qinglong
+cd qinglong
 ```
+
+Save the following as `compose.yaml` in this directory:
+
+```yaml
+services:
+  qinglong:
+    image: whyour/qinglong:latest
+    container_name: qinglong
+    hostname: qinglong
+    restart: unless-stopped
+    ports:
+      - "5700:5700"
+    volumes:
+      - ./data:/ql/data
+    environment:
+      QlBaseUrl: "/"
+      QlPort: "5700"
+```
+
+```bash
+docker compose config
+docker compose up -d
+docker compose logs --tail 100 qinglong
+```
+
+Open `http://localhost:5700`; replace localhost with the server address for a remote host. Data persists in this directory’s `data` folder. See [Docker deployment](./docker) for Debian and non-root options.
+
+Stop and restart from the same deployment directory:
+
+```bash
+docker compose stop
+docker compose start
+```
+
+Continue with [your first task](../first-task), then see [upgrades and backups](../../user-guide/maintenance).

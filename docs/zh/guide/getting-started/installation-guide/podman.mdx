@@ -1,17 +1,26 @@
 # Podman
 
+先安装 [Podman](https://podman.io/docs/installation)。以下示例以 root 身份运行容器，适用于需要 root 权限的 Alpine crond：
+
 ```bash
-# https://podman.io/getting-started/installation
-podman run -dit \
+mkdir -p "$PWD/ql/data"
+sudo podman run -dit \
   --network bridge \
-  -v $PWD/ql/data:/ql/data \
-  # 冒号后面的 5700 为默认端口，如果设置了 QlPort, 需要跟 QlPort 保持一致
+  -v "$PWD/ql/data:/ql/data" \
   -p 5700:5700 \
-  # 部署路径非必须，比如 /test
   -e QlBaseUrl="/" \
-  # 部署端口非必须，当使用 host 模式时，可以设置服务启动后的端口，默认 5700
   -e QlPort="5700" \
   --name qinglong \
   --hostname qinglong \
   docker.io/whyour/qinglong:latest
+```
+
+`QlBaseUrl` 可设置部署路径前缀，例如 `/test`；`QlPort` 默认为 `5700`，必须与端口映射右侧一致。访问 `http://localhost:5700` 完成初始化。
+
+如果宿主机启用 SELinux 且日志提示挂载目录权限不足，可按宿主机策略将挂载参数改为 `-v "$PWD/ql/data:/ql/data:Z"`。非 root 场景应使用 Debian 镜像，并单独确认用户映射和挂载权限。
+
+查看启动日志：
+
+```bash
+sudo podman logs --tail 100 qinglong
 ```

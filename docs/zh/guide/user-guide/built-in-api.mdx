@@ -1,238 +1,172 @@
 # 内置 API
 
-> 全局变量 `QLAPI` 是内置 API 的入口
+在面板通过任务执行器运行的 JavaScript/TypeScript 和 Python 脚本中，`QLAPI` 是内置 API 入口。它使用本机预加载环境，与需要应用 token 的 HTTP OpenAPI、远程 CLI 不同；直接用普通 Node/Python 执行脚本时，不保证注入该变量。
+
+本页依据 [`api.proto`](https://github.com/whyour/qinglong/blob/master/back/protos/api.proto) 和预加载客户端整理。JavaScript 方法返回 Promise；Python 方法同步返回字典。HTTP 接口的字段不一定全部出现在内置 API 中，例如任务的 `work_dir` 和 `allow_multiple_instances` 不在当前 `CronItem` 协议中。
 
 ## 方法
 
-### 1. getEnvs
-**描述**: 获取环境变量列表
+表中的参数均封装为一个对象传入，数组字段不可替换成单个 ID。
 
-**请求参数 (GetEnvsRequest)**
+| 方法 | 用途 | 参数对象 | 响应类型 |
+| --- | --- | --- | --- |
+| `getEnvs` | 获取环境变量 | `{ searchValue: string }` | `EnvsResponse` |
+| `createEnv` | 创建环境变量 | `{ envs: EnvItem[] }` | `EnvsResponse` |
+| `updateEnv` | 更新环境变量 | `{ env: EnvItem }` | `EnvResponse` |
+| `deleteEnvs` | 删除环境变量 | `{ ids: int32[] }` | `Response` |
+| `moveEnv` | 移动环境变量 | `{ id: int32, fromIndex: int32, toIndex: int32 }` | `EnvResponse` |
+| `disableEnvs` | 禁用环境变量 | `{ ids: int32[] }` | `Response` |
+| `enableEnvs` | 启用环境变量 | `{ ids: int32[] }` | `Response` |
+| `updateEnvNames` | 修改环境变量名称 | `{ ids: int32[], name: string }` | `Response` |
+| `getEnvById` | 获取单个环境变量 | `{ id: int32 }` | `EnvResponse` |
+| `systemNotify` | 发送系统通知 | `{ title: string, content: string, notificationInfo?: NotificationInfo }` | `Response` |
+| `getCronDetail` | 按日志路径查询任务 | `{ log_path: string }` | `CronDetailResponse` |
+| `createCron` | 创建任务 | `{ command: string, schedule: string, name?: string, labels: string[], sub_id?: int32, extra_schedules: ExtraScheduleItem[], task_before?: string, task_after?: string }` | `CronResponse` |
+| `updateCron` | 更新任务 | `{ id: int32, command?: string, schedule?: string, name?: string, labels: string[], sub_id?: int32, extra_schedules: ExtraScheduleItem[], task_before?: string, task_after?: string }` | `CronResponse` |
+| `deleteCrons` | 删除任务 | `{ ids: int32[] }` | `Response` |
+| `getCrons` | 获取任务列表 | `{ searchValue?: string }` | `CronsResponse` |
+| `getCronById` | 获取单个任务 | `{ id: int32 }` | `CronResponse` |
+| `enableCrons` | 启用任务 | `{ ids: int32[] }` | `Response` |
+| `disableCrons` | 禁用任务 | `{ ids: int32[] }` | `Response` |
+| `runCrons` | 运行任务 | `{ ids: int32[] }` | `Response` |
 
-| 字段 | 类型 | 必填 | 描述 |
-|-----|------|-----|------|
-| searchValue | string | 是 | 搜索关键词 |
-
-**响应 (EnvsResponse)**
-
-| 字段 | 类型 | 描述 |
-|-----|------|------|
-| code | int32 | 响应代码 |
-| data | EnvItem[] | 环境变量列表 |
-| message | string | 响应消息 |
-
-### 2. createEnv
-**描述**: 创建新环境变量
-
-**请求参数 (CreateEnvRequest)**
-
-| 字段 | 类型 | 必填 | 描述 |
-|-----|------|-----|------|
-| envs | EnvItem[] | 是 | 要创建的环境数组 |
-
-**响应 (EnvsResponse)**
-
-| 字段 | 类型 | 描述 |
-|-----|------|------|
-| code | int32 | 响应代码 |
-| data | EnvItem[] | 创建的环境列表 |
-| message | string | 响应消息 |
-
-### 3. updateEnv
-**描述**: 更新现有环境变量
-
-**请求参数 (UpdateEnvRequest)**
-
-| 字段 | 类型 | 必填 | 描述 |
-|-----|------|-----|------|
-| env | EnvItem | 是 | 要更新的环境 |
-
-**响应 (EnvResponse)**
-
-| 字段 | 类型 | 描述 |
-|-----|------|------|
-| code | int32 | 响应代码 |
-| data | EnvItem | 更新后的环境 |
-| message | string | 响应消息 |
-
-### 4. deleteEnvs
-**描述**: 删除指定环境变量
-
-**请求参数 (DeleteEnvsRequest)**
-
-| 字段 | 类型 | 必填 | 描述 |
-|-----|------|-----|------|
-| ids | int32[] | 是 | 要删除的环境 ID 数组 |
-
-**响应 (Response)**
-
-| 字段 | 类型 | 描述 |
-|-----|------|------|
-| code | int32 | 响应代码 |
-| message | string | 响应消息 |
-
-### 5. moveEnv
-**描述**: 移动环境变量位置
-
-**请求参数 (MoveEnvRequest)**
-
-| 字段 | 类型 | 必填 | 描述 |
-|-----|------|-----|------|
-| id | int32 | 是 | 环境 ID |
-| fromIndex | int32 | 是 | 原始位置 |
-| toIndex | int32 | 是 | 目标位置 |
-
-**响应 (EnvResponse)**
-
-| 字段 | 类型 | 描述 |
-|-----|------|------|
-| code | int32 | 响应代码 |
-| data | EnvItem | 移动后的环境 |
-| message | string | 响应消息 |
-
-### 6. disableEnvs
-**描述**: 禁用指定环境变量
-
-**请求参数 (DisableEnvsRequest)**
-
-| 字段 | 类型 | 必填 | 描述 |
-|-----|------|-----|------|
-| ids | int32[] | 是 | 要禁用的环境 ID 数组 |
-
-**响应 (Response)**
-
-| 字段 | 类型 | 描述 |
-|-----|------|------|
-| code | int32 | 响应代码 |
-| message | string | 响应消息 |
-
-### 7. enableEnvs
-**描述**: 启用指定环境变量
-
-**请求参数 (EnableEnvsRequest)**
-
-| 字段 | 类型 | 必填 | 描述 |
-|-----|------|-----|------|
-| ids | int32[] | 是 | 要启用的环境 ID 数组 |
-
-**响应 (Response)**
-
-| 字段 | 类型 | 描述 |
-|-----|------|------|
-| code | int32 | 响应代码 |
-| message | string | 响应消息 |
-
-### 8. updateEnvNames
-**描述**: 更新指定环境变量的名称
-
-**请求参数 (UpdateEnvNamesRequest)**
-
-| 字段 | 类型 | 必填 | 描述 |
-|-----|------|-----|------|
-| ids | int32[] | 是 | 环境 ID 数组 |
-| name | string | 是 | 要设置的新名称 |
-
-**响应 (Response)**
-
-| 字段 | 类型 | 描述 |
-|-----|------|------|
-| code | int32 | 响应代码 |
-| message | string | 响应消息 |
-
-### 9. getEnvById
-**描述**: 通过 ID 获取环境变量
-
-**请求参数 (GetEnvByIdRequest)**
-
-| 字段 | 类型 | 必填 | 描述 |
-|-----|------|-----|------|
-| id | int32 | 是 | 环境 ID |
-
-**响应 (EnvResponse)**
-
-| 字段 | 类型 | 描述 |
-|-----|------|------|
-| code | int32 | 响应代码 |
-| data | EnvItem | 环境详情 |
-| message | string | 响应消息 |
-
-### 10. systemNotify
-**描述**: 发送系统通知
-
-**请求参数 (SystemNotifyRequest)**
-
-| 字段 | 类型 | 必填 | 描述 |
-|-----|------|-----|------|
-| title | string | 是 | 通知标题 |
-| content | string | 是 | 通知内容 |
-| notificationInfo | object | 否 | 可选通知配置（不填则使用系统默认配置） |
-
-#### notificationInfo 子字段说明
-| 字段 | 类型 | 描述 |
-|-----|------|------|
-| type | NotificationMode | 通知方式类型（枚举值，具体取值见下文说明） |
-| gotifyUrl | string | Gotify 通知（type=gotify时有效）：Gotify 服务地址（如：http://localhost:8080） |
-| gotifyToken | string | Gotify 通知（type=gotify时有效）：Gotify 应用令牌（必填） |
-| gotifyPriority | number | Gotify 通知（type=gotify时有效）：消息优先级（0-10，默认5） |
-| goCqHttpBotUrl | string | Go-CQHttp QQ 机器人（type=goCqHttpBot时有效）：Go-CQHttp 服务地址（如：http://localhost:5700） |
-| goCqHttpBotToken | string | Go-CQHttp QQ 机器人（type=goCqHt
-| code | int32 | 响应代码 |
-| message | string | 响应消息 |
+`?` 表示协议中的可选字段；具体创建和更新仍由服务端校验。`createCron` 的 `command/schedule` 必填。更新任务时建议传回完整的命令和定时规则。`getCronDetail` 使用 `log_path`，不是任务 ID。
 
 ## 数据结构
 
-### NotificationMode
-通知方式类型枚举值：
-
-| 枚举值 | 描述 |
-|-------|------|
-| gotify | Gotify 通知 |
-| goCqHttpBot | Go-CQHttp QQ 机器人 |
-| serverChan | Server 酱 |
-| pushDeer | PushDeer |
-| bark | Bark |
-| chat | 通用聊天通知 |
-| telegramBot | Telegram 机器人 |
-| dingtalkBot | 钉钉机器人 |
-| weWorkBot | 企业微信机器人 |
-| weWorkApp | 企业微信应用 |
-| aibotk | Aibotk 通知 |
-| iGot | iGot 推送 |
-| pushPlus | PushPlus 推送 |
-| wePlusBot | WePlus 机器人 |
-| email | 邮件通知 |
-| pushMe | PushMe 推送 |
-| feishu | 飞书通知 |
-| webhook | Webhook 通知 |
-| chronocat | Chronocat 通知 |
-| ntfy | Ntfy 通知 |
-| wxPusherBot | 微信推送机器人 |
-
 ### EnvItem
 
-| 字段 | 类型 | 必填 | 描述 |
-|-----|------|-----|------|
-| id | int32 | 否 | 环境变量 ID |
-| name | string | 否 | 环境变量名称 |
-| value | string | 否 | 环境变量值 |
-| remarks | string | 否 | 备注 |
-| status | int32 | 否 | 状态 |
-| position | int32 | 否 | 位置 |
+```typescript
+{
+  id?: number;
+  name?: string;
+  value?: string;
+  remarks?: string;
+  status?: number;
+  position?: string;
+}
+```
+
+### CronItem
+
+```typescript
+{
+  id?: number;
+  command?: string;
+  schedule?: string;
+  name?: string;
+  labels: string[];
+  sub_id?: number;
+  extra_schedules: ExtraScheduleItem[];
+  task_before?: string;
+  task_after?: string;
+  status?: number;
+  log_path?: string;
+  pid?: number;
+  last_running_time?: string;
+  last_execution_time?: string;
+}
+```
+
+### ExtraScheduleItem
+
+```typescript
+{
+  schedule: string;
+}
+```
+
+### Response
+
+```typescript
+{
+  code: number;
+  message?: string;
+}
+```
+
+### EnvResponse
+
+```typescript
+{
+  code: number;
+  data: EnvItem;
+  message?: string;
+}
+```
+
+### EnvsResponse
+
+```typescript
+{
+  code: number;
+  data: EnvItem[];
+  message?: string;
+}
+```
+
+### CronResponse
+
+```typescript
+{
+  code: number;
+  data: CronItem;
+  message?: string;
+}
+```
+
+### CronsResponse
+
+```typescript
+{
+  code: number;
+  data: CronItem[];
+  message?: string;
+}
+```
+
+### CronDetailResponse
+
+```typescript
+{
+  code: number;
+  data: CronItem;
+  message?: string;
+}
+```
+
+JavaScript 客户端将 `int64` 解码为字符串，例如 `position` 和任务时间字段。成功响应的 `code` 为 `200`；检查业务代码并捕获调用异常。
+
+## 通知
+
+`systemNotify` 需要 `title`、`content`；可选的 `notificationInfo` 覆盖系统通知配置。不传时使用面板配置。
+
+`notificationInfo.type` 的枚举值包括：
+
+`gotify`, `goCqHttpBot`, `serverChan`, `pushDeer`, `bark`, `chat`, `telegramBot`, `dingtalkBot`, `weWorkBot`, `weWorkApp`, `aibotk`, `iGot`, `pushPlus`, `wePlusBot`, `email`, `pushMe`, `feishu`, `webhook`, `chronocat`, `ntfy`, `wxPusherBot`, `wxPusherSpt`, `wpush`.
+
+常见配置字段：Gotify 使用 `gotifyUrl/gotifyToken/gotifyPriority`；Telegram 使用 `telegramBotToken/telegramBotUserId`；飞书使用 `larkKey/larkSecret`；WxPusher SPT 使用 `wxPusherSptList`；WPush 使用 `wpushApiKey/wpushChannel/wpushTopicCode`。其余字段见[通知协议](https://github.com/whyour/qinglong/blob/master/back/protos/api.proto)。
 
 ## 调用示例
 
-### nodejs
+### JavaScript
 
 ```javascript
-// 获取环境列表
-QLAPI.getEnvs({ searchValue: 'dddd' }).then((x) => {
-  console.log('getEnvs', x);
-});
+async function main() {
+  const envs = await QLAPI.getEnvs({ searchValue: 'EXAMPLE' });
+  console.log(envs.code);
+  const tasks = await QLAPI.getCrons({ searchValue: 'demo' });
+  console.log(tasks.code);
+  await QLAPI.systemNotify({ title: 'Demo', content: 'Task finished' });
+}
+
+main().catch(console.error);
 ```
 
-### python
+### Python
 
 ```python
-# 获取环境列表
-print(QLAPI.getEnvs({ "searchValue": "dddd" }))
+result = QLAPI.getCrons({"searchValue": "demo"})
+print(result["code"])
+QLAPI.systemNotify({"title": "Demo", "content": "Task finished"})
 ```

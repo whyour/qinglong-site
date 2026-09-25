@@ -1,21 +1,20 @@
-# 本机
+# Linux 本机部署
 
-建议使用纯净系统安装，避免系统原有数据丢失，需要自己安装 node/npm/python3/pip3
+支持 Debian、Ubuntu、Alpine。启动过程会安装系统依赖并配置 nginx 等服务，建议使用专用环境。预先安装 Node.js、npm、Python3 和 pip3；运行用户需要管理系统依赖和服务的权限。使用新 CLI 时，Node.js 至少为 22.12，推荐 24。
 
-```bash
-# Debian/Ubuntu
-curl -sL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-# Centos
-curl --silent --location https://rpm.nodesource.com/setup_20.x | sudo bash
-```
+## 安装并设置路径
 
 ```bash
-npm install -g node-pre-gyp pnpm
+npm install -g node-pre-gyp pnpm@8.3.1
 npm install -g @whyour/qinglong
-qinglong
-# 根据提示增加环境变量 QL_DIR 和 QL_DATA_DIR
-export QL_DIR=""
-export QL_DATA_DIR=""
-# 再次执行
+export QL_DIR="$(npm root -g)/@whyour/qinglong"
+export QL_DATA_DIR="$HOME/qinglong/data"
+mkdir -p "$QL_DATA_DIR"
 qinglong
 ```
+
+`QL_DIR` 是面板安装目录，`QL_DATA_DIR` 是持久化数据目录，必须为绝对路径且以 `/data` 结尾。使用执行安装的同一用户和 npm 环境；不要把路径设置为空。将两个变量保存到实际启动面板的用户或服务环境中，以便重启后继续使用。
+
+启动后访问 `http://localhost:5700`，完成初始化并[创建第一个任务](../first-task)。
+
+`@whyour/qinglong` 安装面板；`@whyour/qinglong-cli` 安装远程客户端，二者都提供 `ql`。远程管理请按 [CLI 使用指南](/guide/user-guide/cli)选择独立入口。

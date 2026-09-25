@@ -1,3 +1,16 @@
 ---
 overview: true
 ---
+
+# API overview
+
+Qinglong provides remote HTTP OpenAPI and the in-script `QLAPI`. Remote endpoints use the `/open` prefix and Bearer tokens. Resource-page base paths are relative to `/open`; for example, list environment variables with `GET /open/envs`.
+
+- [Preparation](./preparation): applications, tokens and requests.
+- [API and CLI routes](./routes): Routes, commands, inputs and retired endpoints.
+- [Remote CLI](/guide/user-guide/cli): manage panels from terminals and automation.
+- [Built-in API](/guide/user-guide/built-in-api): use `QLAPI` in panel-executed scripts.
+
+Older panel versions may not support all endpoints. Check the version installed on your server.
+
+Successful JSON responses usually contain `{ code: 200, data: ... }`; some actions return only `code/message`, while downloads return streams. Check both HTTP status and the API `code`; HTTP 200 alone does not guarantee success.

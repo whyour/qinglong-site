@@ -1,0 +1,232 @@
+# API and CLI route reference
+
+This reference maps HTTP API endpoints to CLI commands. HTTP paths include `/open`. See [authentication](./preparation) and the [remote CLI guide](/guide/user-guide/cli).
+
+The CLI registers 143 routes, available through `ql api routes --json`. The backend also dynamically registers `GET /open/dashboard/successes` and `GET /open/dashboard/failures`. These are not in the CLI catalogue and cannot be called through `api request`; use an HTTP client as described under [Dashboard](./dashboard). The CLI route count is not the complete backend endpoint count.
+
+## Input conventions
+
+- Commands below show positional arguments. Use `--data` for bodies and `--query` for query objects. Both accept JSON, `@file` or stdin (`-`).
+- Use `--file` for uploads and `--output` for downloads to a new file.
+- Named `task run/stop` and `subscription run/stop/enable/disable` commands accept one ID. Use `ql api request` with an ID array for batches.
+- Check `--help` for existing command query options; use `api request --query` for full query support. Authenticate through `ql login --url ...`, rather than putting secrets in query examples.
+- `task update` requires `command/schedule`; `subscription update` requires `type/url/alias`. The positional ID is injected into the body; existing objects are not automatically read and merged.
+- Resource permissions still apply. Check both HTTP status and the response's API `code`. Download endpoints return file streams.
+
+## crons
+
+| Command | Method | Path | Request input |
+| --- | --- | --- | --- |
+| `ql task view-list` | GET | `/open/crons/views` | --query |
+| `ql task view-create` | POST | `/open/crons/views` | --data, --query |
+| `ql task view-update <id>` | PUT | `/open/crons/views` | --data, --query |
+| `ql task view-delete <id...>` | DELETE | `/open/crons/views` | ID array, --query |
+| `ql task view-move` | PUT | `/open/crons/views/move` | --data, --query |
+| `ql task view-disable <id...>` | PUT | `/open/crons/views/disable` | ID array, --query |
+| `ql task view-enable <id...>` | PUT | `/open/crons/views/enable` | ID array, --query |
+| `ql task list` | GET | `/open/crons` | query: --help / api request |
+| `ql task detail` | GET | `/open/crons/detail` | --query |
+| `ql task create` | POST | `/open/crons` | --data, --query |
+| `ql task run <id>` | PUT | `/open/crons/run` | ID array, query: --help / api request |
+| `ql task stop <id>` | PUT | `/open/crons/stop` | ID array, query: --help / api request |
+| `ql task labels-delete` | DELETE | `/open/crons/labels` | --data, --query |
+| `ql task labels-create` | POST | `/open/crons/labels` | --data, --query |
+| `ql task disable <id...>` | PUT | `/open/crons/disable` | ID array, --query |
+| `ql task enable <id...>` | PUT | `/open/crons/enable` | ID array, --query |
+| `ql task logs <id>` | GET | `/open/crons/:id/log` | query: --help / api request |
+| `ql task update <id>` | PUT | `/open/crons` | --data, --query |
+| `ql task delete <id...>` | DELETE | `/open/crons` | ID array, --query |
+| `ql task pin <id...>` | PUT | `/open/crons/pin` | ID array, --query |
+| `ql task unpin <id...>` | PUT | `/open/crons/unpin` | ID array, --query |
+| `ql task import` | GET | `/open/crons/import` | --query |
+| `ql task get <id>` | GET | `/open/crons/:id` | query: --help / api request |
+| `ql task status` | PUT | `/open/crons/status` | --data, --query |
+| `ql task instances <id>` | GET | `/open/crons/:id/instances` | --query |
+| `ql task instance-stop <id> <instanceId>` | POST | `/open/crons/:id/instances/:instanceId/stop` | --query |
+| `ql task log-files <id>` | GET | `/open/crons/:id/logs` | --query |
+
+## subscriptions
+
+| Command | Method | Path | Request input |
+| --- | --- | --- | --- |
+| `ql subscription list` | GET | `/open/subscriptions` | query: --help / api request |
+| `ql subscription create` | POST | `/open/subscriptions` | --data, --query |
+| `ql subscription run <id>` | PUT | `/open/subscriptions/run` | ID array, query: --help / api request |
+| `ql subscription stop <id>` | PUT | `/open/subscriptions/stop` | ID array, query: --help / api request |
+| `ql subscription disable <id>` | PUT | `/open/subscriptions/disable` | ID array, query: --help / api request |
+| `ql subscription enable <id>` | PUT | `/open/subscriptions/enable` | ID array, query: --help / api request |
+| `ql subscription logs <id>` | GET | `/open/subscriptions/:id/log` | query: --help / api request |
+| `ql subscription update <id>` | PUT | `/open/subscriptions` | --data, --query |
+| `ql subscription delete <id...>` | DELETE | `/open/subscriptions` | ID array, --query |
+| `ql subscription get <id>` | GET | `/open/subscriptions/:id` | query: --help / api request |
+| `ql subscription status` | PUT | `/open/subscriptions/status` | --data, --query |
+| `ql subscription log-files <id>` | GET | `/open/subscriptions/:id/logs` | --query |
+
+## apps
+
+| Command | Method | Path | Request input |
+| --- | --- | --- | --- |
+| `ql app list` | GET | `/open/apps` | --query |
+| `ql app create` | POST | `/open/apps` | --data, --query |
+| `ql app update <id>` | PUT | `/open/apps` | --data, --query |
+| `ql app delete <id...>` | DELETE | `/open/apps` | ID array, --query |
+| `ql app reset-secret <id>` | PUT | `/open/apps/:id/reset-secret` | --query |
+
+## auth
+
+| Command | Method | Path | Request input |
+| --- | --- | --- | --- |
+| `ql auth login` | GET | `/open/auth/token` | query: --help / api request |
+
+## envs
+
+| Command | Method | Path | Request input |
+| --- | --- | --- | --- |
+| `ql env list` | GET | `/open/envs` | --query |
+| `ql env create` | POST | `/open/envs` | --data, --query |
+| `ql env update <id>` | PUT | `/open/envs` | --data, --query |
+| `ql env delete <id...>` | DELETE | `/open/envs` | ID array, --query |
+| `ql env move <id>` | PUT | `/open/envs/:id/move` | --data, --query |
+| `ql env disable <id...>` | PUT | `/open/envs/disable` | ID array, --query |
+| `ql env enable <id...>` | PUT | `/open/envs/enable` | ID array, --query |
+| `ql env rename` | PUT | `/open/envs/name` | --data, --query |
+| `ql env get <id>` | GET | `/open/envs/:id` | --query |
+| `ql env pin <id...>` | PUT | `/open/envs/pin` | ID array, --query |
+| `ql env unpin <id...>` | PUT | `/open/envs/unpin` | ID array, --query |
+| `ql env labels-create` | POST | `/open/envs/labels` | --data, --query |
+| `ql env labels-delete` | DELETE | `/open/envs/labels` | --data, --query |
+| `ql env upload` | POST | `/open/envs/upload` | --data, --file (env), --query |
+
+## configs
+
+| Command | Method | Path | Request input |
+| --- | --- | --- | --- |
+| `ql config samples` | GET | `/open/configs/samples` | --query |
+| `ql config list` | GET | `/open/configs/files` | --query |
+| `ql config get` | GET | `/open/configs/detail` | --query |
+| `ql config save` | POST | `/open/configs/save` | --data, --query |
+
+## scripts
+
+| Command | Method | Path | Request input |
+| --- | --- | --- | --- |
+| `ql script list` | GET | `/open/scripts` | --query |
+| `ql script get` | GET | `/open/scripts/detail` | --query |
+| `ql script create` | POST | `/open/scripts` | --data, --file (file), --query |
+| `ql script update` | PUT | `/open/scripts` | --data, --file (file), --query |
+| `ql script delete` | DELETE | `/open/scripts` | --data, --query |
+| `ql script download` | POST | `/open/scripts/download` | --data, --output, --query |
+| `ql script run` | PUT | `/open/scripts/run` | --data, --query |
+| `ql script stop` | PUT | `/open/scripts/stop` | --data, --query |
+| `ql script rename` | PUT | `/open/scripts/rename` | --data, --query |
+
+## logs
+
+| Command | Method | Path | Request input |
+| --- | --- | --- | --- |
+| `ql log list` | GET | `/open/logs` | --query |
+| `ql log get` | GET | `/open/logs/detail` | --query |
+| `ql log delete` | DELETE | `/open/logs` | --data, --query |
+| `ql log download` | POST | `/open/logs/download` | --data, --output, --query |
+
+## dependencies
+
+| Command | Method | Path | Request input |
+| --- | --- | --- | --- |
+| `ql dependency list` | GET | `/open/dependencies` | --query |
+| `ql dependency create` | POST | `/open/dependencies` | --data, --query |
+| `ql dependency update <id>` | PUT | `/open/dependencies` | --data, --query |
+| `ql dependency delete <id...>` | DELETE | `/open/dependencies` | ID array, --query |
+| `ql dependency force-delete <id...>` | DELETE | `/open/dependencies/force` | ID array, --query |
+| `ql dependency get <id>` | GET | `/open/dependencies/:id` | --query |
+| `ql dependency reinstall <id...>` | PUT | `/open/dependencies/reinstall` | ID array, --query |
+| `ql dependency cancel <id...>` | PUT | `/open/dependencies/cancel` | ID array, --query |
+
+## system
+
+| Command | Method | Path | Request input |
+| --- | --- | --- | --- |
+| `ql system info` | GET | `/open/system` | --query |
+| `ql system config-get` | GET | `/open/system/config` | --query |
+| `ql system config-log-remove-frequency` | PUT | `/open/system/config/log-remove-frequency` | --data, --query |
+| `ql system config-cron-concurrency` | PUT | `/open/system/config/cron-concurrency` | --data, --query |
+| `ql system config-dependence-proxy` | PUT | `/open/system/config/dependence-proxy` | --data, --query |
+| `ql system config-node-mirror` | PUT | `/open/system/config/node-mirror` | --data, --query |
+| `ql system config-python-mirror` | PUT | `/open/system/config/python-mirror` | --data, --query |
+| `ql system config-linux-mirror` | PUT | `/open/system/config/linux-mirror` | --data, --query |
+| `ql system update-check` | PUT | `/open/system/update-check` | --query |
+| `ql system update` | PUT | `/open/system/update` | --query |
+| `ql system reload` | PUT | `/open/system/reload` | --data, --query |
+| `ql system notify` | PUT | `/open/system/notify` | --data, --query |
+| `ql system command-run` | PUT | `/open/system/command-run` | --data, --output, --query |
+| `ql system command-stop` | PUT | `/open/system/command-stop` | --data, --query |
+| `ql system data-export` | PUT | `/open/system/data/export` | --data, --output, --query |
+| `ql system data-import` | PUT | `/open/system/data/import` | --data, --file (data), --query |
+| `ql system logs` | GET | `/open/system/log` | --query |
+| `ql system logs-delete` | DELETE | `/open/system/log` | --query |
+| `ql system auth-reset` | PUT | `/open/system/auth/reset` | --data, --query |
+| `ql system config-timezone` | PUT | `/open/system/config/timezone` | --data, --query |
+| `ql system config-lang` | PUT | `/open/system/config/lang` | --data, --query |
+| `ql system config-panel-title` | PUT | `/open/system/config/panel-title` | --data, --query |
+| `ql system config-global-ssh-key` | PUT | `/open/system/config/global-ssh-key` | --data, --query |
+| `ql system config-dependence-clean` | PUT | `/open/system/config/dependence-clean` | --data, --query |
+| `ql system client-ip-get` | GET | `/open/system/client-ip/config` | --query |
+| `ql system client-ip-set` | PUT | `/open/system/client-ip/config` | --data, --query |
+| `ql system client-ip-diagnose` | GET | `/open/system/client-ip/diagnose` | --query |
+| `ql system retention-set` | PUT | `/open/system/storage-retention/config` | --data, --query |
+| `ql system retention-preview` | POST | `/open/system/storage-retention/preview` | --data, --query |
+| `ql system retention-cleanup` | POST | `/open/system/storage-retention/cleanup` | --data, --query |
+
+## dashboard
+
+| Command | Method | Path | Request input |
+| --- | --- | --- | --- |
+| `ql dashboard record` | POST | `/open/dashboard/record` | --data, --query |
+| `ql dashboard overview` | GET | `/open/dashboard/overview` | --query |
+| `ql dashboard trend` | GET | `/open/dashboard/trend` | --query |
+| `ql dashboard top-time` | GET | `/open/dashboard/top-time` | --query |
+| `ql dashboard top-count` | GET | `/open/dashboard/top-count` | --query |
+| `ql dashboard runtime` | GET | `/open/dashboard/runtime` | --query |
+| `ql dashboard labels` | GET | `/open/dashboard/labels` | --query |
+| `ql dashboard system` | GET | `/open/dashboard/system` | --query |
+
+## user
+
+| Command | Method | Path | Request input |
+| --- | --- | --- | --- |
+| `ql user login` | POST | `/open/user/login` | --data, --query |
+| `ql user logout` | POST | `/open/user/logout` | --query |
+| `ql user update` | PUT | `/open/user` | --data, --query |
+| `ql user get` | GET | `/open/user` | --query |
+| `ql user two-factor-init` | GET | `/open/user/two-factor/init` | --query |
+| `ql user two-factor-active` | PUT | `/open/user/two-factor/active` | --data, --query |
+| `ql user two-factor-deactivate` | PUT | `/open/user/two-factor/deactivate` | --query |
+| `ql user two-factor-login` | PUT | `/open/user/two-factor/login` | --data, --query |
+| `ql user login-log` | GET | `/open/user/login-log` | --query |
+| `ql user ip-blacklist` | GET | `/open/user/ip-blacklist` | --query |
+| `ql user ip-blacklist-set` | PUT | `/open/user/ip-blacklist` | --data, --query |
+| `ql user ip-blacklist-delete` | DELETE | `/open/user/ip-blacklist` | --data, --query |
+| `ql user notification-get` | GET | `/open/user/notification` | --query |
+| `ql user notification-set` | PUT | `/open/user/notification` | --data, --query |
+| `ql user init` | PUT | `/open/user/init` | --data, --query |
+| `ql user notification-init` | PUT | `/open/user/notification/init` | --data, --query |
+| `ql user avatar` | PUT | `/open/user/avatar` | --data, --file (avatar), --query |
+
+## update
+
+| Command | Method | Path | Request input |
+| --- | --- | --- | --- |
+| `ql system apply-reload` | PUT | `/open/update/reload` | --query |
+| `ql system apply-system` | PUT | `/open/update/system` | --query |
+| `ql system apply-data` | PUT | `/open/update/data` | --query |
+
+## health
+
+| Command | Method | Path | Request input |
+| --- | --- | --- | --- |
+| `ql health get` | GET | `/open/health` | --query |
+
+## Retired endpoints
+
+`GET /open/configs/:file`, `GET /open/scripts/:file` and `GET /open/logs/:file` return API code `410` and are excluded from the CLI catalogue. Use the corresponding `/detail` endpoints or `ql config get`, `ql script get`, and `ql log get`.
+

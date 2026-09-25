@@ -1,0 +1,184 @@
+# Remote CLI
+
+`@whyour/qinglong-cli` is a standalone command-line client for managing remote Qinglong panels through OpenAPI. It manages tasks, subscriptions, environment variables, scripts, configuration, dependencies and system settings, with JSON output for automation and AI agents.
+
+Available commands and endpoints depend on the installed CLI and panel versions. Check your client's `--help` and the target panel's supported endpoints.
+
+## Installation and entrypoints
+
+Requires **Node.js 22.12 or newer**; Node.js 24 is recommended.
+
+```bash
+npm install -g @whyour/qinglong-cli
+ql --help
+ql task --help
+```
+
+The panel also provides a command named `ql`. On a panel host, invoke the remote package temporarily to avoid replacing the built-in command:
+
+```bash
+npm exec --package=@whyour/qinglong-cli -- ql --help
+```
+
+| Entrypoint | Purpose | Example |
+| --- | --- | --- |
+| `ql` from `@whyour/qinglong-cli` | Remote panel API operations | `ql task list`, `ql task run 12` |
+| Built-in Shell commands | Script execution and maintenance inside the panel host/container | `task demo.js`, `ql repo ...` |
+| Internal TypeScript tools | Optional local execution and maintenance | `node /ql/cli/dist/ql.js task exec --root /ql demo.js now` |
+
+The npm package does not provide a standalone `task` executable, local runner, `repo/raw`, or `reload/reset*`. See [built-in commands](./basic-explanation) and [panel-internal tools](./local-cli). Use `command -v ql` and `ql --help` to identify the entrypoint. Set `QL_LANG=en` for English help; command names and JSON fields do not change.
+
+### Build from source
+
+You can also build the CLI from Qinglong source:
+
+```bash
+git clone --branch master https://github.com/whyour/qinglong.git
+cd qinglong
+npm ci --prefix cli
+npm run build:cli
+node cli/dist/npm/ql.js --help
+```
+
+`cli/dist/npm/ql.js` is the remote entrypoint. Replace `ql` in the examples below with `node /absolute/path/to/qinglong/cli/dist/npm/ql.js` when using this build.
+
+## Authentication
+
+### Application credentials
+
+Create an application under **System Settings → Application Settings** and grant the required scopes: for example, `crons` for tasks, `subscriptions` for subscriptions and `envs` for environment variables.
+
+```bash
+ql login --url https://ql.example.com
+# Enter Client ID and Client Secret when prompted
+ql auth status --scope crons --json
+ql task list --json
+```
+
+`login` is an alias of `auth login`. Use the panel root URL, optionally including a proxy prefix such as `https://example.com/qinglong`, without `/open`. Remote connections require HTTPS; loopback URLs such as `http://127.0.0.1:5700` may use HTTP. Redirects are not followed.
+
+Client Secret is not accepted as a command-line argument. For CI, inject `QL_CLIENT_ID` and `QL_CLIENT_SECRET` through your credential configuration before running the same login command.
+
+Credentials and tokens are stored as plaintext in `~/.config/qinglong/cli.json` with mode `0600`. Set `QL_CLI_CONFIG` to use another file. Expired application tokens are refreshed automatically. Successful login verifies credentials, not access to every resource.
+
+### Existing access tokens
+
+Inject both `QL_URL` and `QL_ACCESS_TOKEN` into your terminal or CI credential environment, then run commands without login. Valid application tokens and panel session tokens are supported.
+
+Both variables are required for protected commands. They take precedence over saved configuration, are not persisted, and are not automatically refreshed. An expired direct token does not fall back to saved credentials. To return to saved application credentials:
+
+```bash
+unset QL_URL QL_ACCESS_TOKEN
+ql auth status --json
+```
+
+`auth status` checks a representative read for `crons` by default; use `--scope subscriptions` or another supported scope to check that resource. This does not verify every write permission. App management requires `apps` permission or an authorized panel session; the panel UI does not currently expose every backend scope.
+
+```bash
+ql auth logout --json
+```
+
+Logout removes only local configuration. It does not revoke server tokens or clear the parent process's environment. Revoke access through the panel's application or session management.
+
+## Tasks
+
+Replace example IDs with IDs returned by your panel.
+
+```bash
+ql task list --search demo --page 1 --size 50 --json
+ql task get 12 --json
+ql task create --name demo --command 'task demo.js' --schedule '0 0 * * *' --json
+ql task run 12 --json
+ql task logs 12 --tail 200 --json
+ql task instances 12 --json
+ql task stop 12 --json
+```
+
+The script must already exist on the panel. `accepted: true` means the run request was accepted, not that execution succeeded. Check task state, instances and logs. The latest log may belong to a previous run, and `logStatus: completed` does not imply success.
+
+Updates require the complete required fields (`command` and `schedule`); there is no automatic read-and-merge:
+
+```bash
+ql task update 12 --data '{"name":"demo","command":"task demo.js","schedule":"0 8 * * *","allow_multiple_instances":0}' --json
+ql task enable 12 13 --json
+```
+
+`task run/stop` accepts one ID at a time. Use an array body for a batch:
+
+```bash
+ql api request PUT /open/crons/run --data '[12,13]' --json
+```
+
+## Subscriptions
+
+```bash
+ql subscription list --json
+ql subscription get 5 --json
+ql subscription create --type public-repo --url https://example.com/repo.git --alias demo --schedule-type crontab --schedule '0 0 * * *' --json
+ql subscription run 5 --json
+ql subscription logs 5 --tail 200 --json
+ql subscription stop 5 --json
+ql subscription disable 5 --json
+ql subscription enable 5 --json
+```
+
+Replace the example repository URL. Creation requires `type/url/alias/schedule_type`; updates require `type/url/alias`. Submit filters, branches, interval schedules and hooks through `--data @subscription.json`. Pass private repository credentials through protected files or stdin. Run, stop, enable and disable accept one subscription ID each.
+
+## Environment variables, files and system
+
+Environment variable creation accepts an array, for example in `envs.json`:
+
+```json
+[{"name":"EXAMPLE","value":"demo","remarks":"CLI example"}]
+```
+
+```bash
+ql env create --data @envs.json --json
+ql env list --query '{"searchValue":"EXAMPLE"}' --json
+ql script create --file ./demo.js --data '{"filename":"demo.js","path":""}' --json
+ql script get --query '{"file":"demo.js","path":""}' --json
+ql config get --query '{"path":"config.sh"}' --json
+ql log download --data '{"filename":"example.log","path":"demo"}' --output ./example.log --json
+ql system info --json
+ql dashboard overview --json
+```
+
+Use `--file` for uploads and `--output` for downloads. Existing output files are never overwritten. App commands hide `client_secret` and `tokens` unless `--show-secrets` is explicit. Other resources may return environment values, file contents or session data.
+
+## Generic requests and command reference
+
+```bash
+ql api routes --json
+ql api request GET /open/crons --query '{"searchValue":"demo","page":1,"size":100}' --json
+ql task create --help
+```
+
+The [API and CLI route reference](/api/routes) lists registered commands and HTTP paths. `api request` accepts only methods and paths in the CLI catalogue; it is not an unrestricted HTTP client.
+
+- `--data` accepts inline JSON, `@file.json` or `-` (stdin). `--query` supports the same sources but requires an object.
+- Do not read stdin through both options, or provide a field through both `--data` and a named flag.
+- Generic requests and newer resource commands support `--timeout` in seconds: default 30, maximum 3600. Check `--help` for the options supported by existing task/subscription commands.
+- `task list` defaults to 50 items per page, maximum 200. Task/subscription logs default to the last 200 lines, maximum 10000. Line truncation occurs on the client and does not reduce server reads.
+
+## Output and failures
+
+Default output is indented JSON; `--json` emits single-line JSON. Results go to stdout and errors to stderr.
+
+```json
+{"code":200,"data":{"taskId":12,"action":"run","accepted":true}}
+```
+
+| Exit code | Meaning |
+| --- | --- |
+| `0` | Success |
+| `1` | API, network or configuration error |
+| `2` | Invalid arguments |
+| `3` | Not authenticated, 401/403, or two-factor authentication required |
+
+The CLI never automatically retries HTTP requests. After a network error or timeout, check server state before retrying: the remote action may already have happened. The ordinary run endpoint returns neither a separate run ID nor an idempotency key.
+
+## Agent Skill
+
+The npm package includes `skills/qinglong-cli`. Copy it into your agent's skills directory for authentication, command selection and result verification guidance. It uses the remote npm entrypoint, stores no credentials and grants no additional permissions. Local execution and maintenance use the separate `qinglong-local` Skill.
+
+Sources: [CLI](https://github.com/whyour/qinglong/tree/master/cli), [remote Skill](https://github.com/whyour/qinglong/tree/master/cli/skills/qinglong-cli).

@@ -7,7 +7,7 @@
 
 ### 获取示例文件列表
 ```http
-GET /sample
+GET /samples
 ```
 
 获取系统预设的示例配置文件列表。
@@ -75,12 +75,9 @@ POST /save
 }
 ```
 
-### 获取指定文件
-```http
-GET /:file
-```
+### 已下线接口
 
-获取指定文件名的配置文件内容。
+`GET /:file` 返回业务代码 `410`。读取配置请使用 `GET /open/configs/detail?path=config.sh`，或 `ql config get --query '{"path":"config.sh"}'`。
 
 ## 错误处理
 - 所有接口遵循统一的错误处理机制

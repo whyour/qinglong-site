@@ -1,0 +1,38 @@
+# Dashboard API
+
+Base path: `/open/dashboard`. Applications need the `dashboard` scope.
+
+| Method | Path | Description |
+| --- | --- | --- |
+| GET | `/overview` | Total/enabled/disabled tasks, today's runs, successes, failures, success rate and average time |
+| GET | `/successes` | Today's successful tasks: `id/name/command/successCount/deleted` |
+| GET | `/failures` | Today's failed tasks: `id/name/command/failCount/deleted` |
+| GET | `/trend` | Daily trend; query parameter `days` defaults to 7 |
+| GET | `/top-time` | Today's time ranking, at most 5 entries |
+| GET | `/top-count` | Today's execution-count ranking, at most 5 entries |
+| GET | `/runtime` | Running instances, queue count and recently idle tasks |
+| GET | `/labels` | Counts, runs, success rates and time grouped by label |
+| GET | `/system` | OS, memory, CPU count, load and process uptime |
+| POST | `/record` | Record task execution statistics |
+
+Statistical `avgTime/maxTime` values use milliseconds. Running-instance `elapsed` uses seconds. Success/failure entries set `deleted: true` when the task was deleted but its statistics remain.
+
+```bash
+ql dashboard overview --json
+ql dashboard trend --query '{"days":7}' --json
+ql dashboard runtime --json
+```
+
+The current CLI does not register `successes/failures`, including through `api request`. Call them directly with an authorized token:
+
+```bash
+curl 'https://ql.example.com/open/dashboard/failures'   -H "Authorization: Bearer $QL_ACCESS_TOKEN"
+```
+
+## Record statistics
+
+`POST /record` accepts the body below. `ref_id` is the task ID, `code` is the script exit code (numeric `0` means success), and `elapsed` is seconds. This endpoint increments daily statistics; it is not a read operation.
+
+```json
+{"ref_id":12,"code":0,"elapsed":1.5}
+```
