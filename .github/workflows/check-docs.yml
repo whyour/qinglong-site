@@ -33,7 +33,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: whyour/qinglong
-          ref: c1c32abb82906db6c88bb5b646e30078d17e249e
+          ref: 18601acbdcb17db3e9cb64d7b18a690959d4f8d3
           path: upstream-qinglong
           persist-credentials: false
           sparse-checkout: cli/src/remote/api
