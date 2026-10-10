@@ -136,6 +136,7 @@ ql subscription enable 5 --json
 ql env create --data @envs.json --json
 ql env list --query '{"searchValue":"EXAMPLE"}' --json
 ql script create --file ./demo.js --data '{"filename":"demo.js","path":""}' --json
+ql script update --data '{"filename":"demo.js","path":"","content":"console.log(1);\n"}' --json
 ql script get --query '{"file":"demo.js","path":""}' --json
 ql config get --query '{"path":"config.sh"}' --json
 ql log download --data '{"filename":"example.log","path":"demo"}' --output ./example.log --json
@@ -144,6 +145,44 @@ ql dashboard overview --json
 ```
 
 `--file` 指定上传文件；`--output` 指定下载路径，CLI 不覆盖已存在的文件。应用命令默认隐藏 `client_secret` 和 `tokens`，明确需要时使用 `--show-secrets`；其他资源输出可能包含环境变量值、文件内容或会话信息。
+
+脚本上传使用 `script create --file`，更新已有内容使用 `script update --data` 的 JSON 请求体。上传不会自动记录历史；面板保存内容发生变化时才保留旧内容。
+
+### 查看与恢复脚本历史
+
+历史命令需要 CLI **0.1.2 或更高版本**、目标青龙 **2.23.0 或更高版本**以及 `scripts` 权限。升级本机 CLI 不会给旧面板增加这些 API。功能范围和保留限制见[脚本编辑历史](./script-history)。
+
+先读取版本列表：
+
+```bash
+ql script history-list --query '{"filename":"demo.js","path":""}' --json
+```
+
+从 `data.versions` 选择一个 `id`。创建 `history-detail.json`，将占位内容替换为列表实际返回的版本 UUID：
+
+```json
+{"filename":"demo.js","path":"","id":"<version-uuid-from-list>"}
+```
+
+```bash
+ql script history-detail --query @history-detail.json --json
+```
+
+详情的 `data.version.content` 是历史内容，`data.current` 是服务器当前已保存内容。确认比较结果后，创建 `history-restore.json`，填写所选 UUID 和此次详情返回的完整 `data.currentHash`：
+
+```json
+{"filename":"demo.js","path":"","id":"<version-uuid-from-list>","expectedHash":"<currentHash-from-detail>"}
+```
+
+```bash
+ql script history-restore --data @history-restore.json --json
+```
+
+`id` 必须是实际 UUID，`expectedHash` 必须是返回的 64 位十六进制哈希，不能直接使用示例占位文字。历史查询使用 `filename`，既有 `script get` 使用 `file`；这三个历史命令不使用位置 ID。
+
+恢复发生变更时会先保留当前内容，返回 `data.changed: true`、`historyRecorded: true` 和 `cleanupPending`；内容相同时只返回 `content`、`changed: false`。`cleanupPending: true` 表示脚本已保存但历史清理未完成，请检查存储权限和空间。
+
+HTTP/API 409 表示文件在预览后发生变化，CLI 退出码为 1。重新读取并比较，再由操作者确认；不要只刷新哈希自动恢复。历史已清理可能返回 404。文本限制与明确确认不留档保存的 API 流程见[脚本 API](/api/script)。
 
 ## 通用请求与命令参考
 
@@ -157,7 +196,7 @@ ql task create --help
 
 - `--data` 接受 JSON 字符串、`@file.json` 或 `-`（标准输入）；`--query` 同样支持这些形式，但内容必须是对象。
 - 不要同时让 `--data` 和 `--query` 读取标准输入，同一字段也不能同时通过 `--data` 和命名选项提交。
-- 通用请求和新增资源命令支持 `--timeout`，单位为秒，默认 30，最大 3600。既有 `task list/get/run/stop/logs` 与对应订阅命令的选项以 `--help` 为准。
+- 通用请求和新增资源命令支持 `--timeout`，单位为秒，默认 30，最大 3600。它只控制 HTTP 请求等待，不是脚本执行期限，也不会停止已接受的远端任务。既有 `task list/get/run/stop/logs` 与对应订阅命令的选项以 `--help` 为准。
 - `task list` 默认每页 50 条，最多 200 条；`task logs` 和 `subscription logs` 默认显示末尾 200 行，最多 10000 行。行截取发生在客户端，不能减少服务端读取量。
 
 ## JSON 输出与错误处理

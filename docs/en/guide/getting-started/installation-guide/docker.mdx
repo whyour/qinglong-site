@@ -16,6 +16,19 @@ docker run -dit \
 
 Open `http://localhost:5700` to initialize the panel. `QlBaseUrl` is an optional deployment prefix such as `/test`. `QlPort` controls the listening port and defaults to `5700`; the right side of `-p` must match it.
 
+Qinglong 2.23.0 uses these runtimes in its default images. Older images may use different versions:
+
+| Default image | System | Node.js | Python |
+| --- | --- | --- | --- |
+| `latest` | Alpine | Version supplied by APK | 3.11 |
+| `debian` | Debian 12 (Bookworm) | 20 | 3.11 |
+
+Qinglong 2.23.0 is the last release of the Python 3.10 compatibility images. After publication, `2.23.0-python3.10` and `2.23.0-debian-python3.10` are no longer maintained and will receive no further updates. Validate your scripts and dependencies, then migrate to the default Python 3.11 images.
+
+When upgrading an older container, back up persistent data and check your scripts and dependencies against the new runtime. See [maintenance](/guide/user-guide/maintenance) for the steps.
+
+Binding a new, empty host directory at `/ql/data` hides the Python packages preinstalled at that path in the image. Before running Python scripts or notification helpers that import `requests`, install `requests` through the panel's Python dependency manager and confirm that installation succeeds. Reuse your existing data directory when upgrading, and follow the maintenance guide for dependency checks after a runtime change.
+
 ## Debian and non-root execution
 
 Use `whyour/qinglong:debian` for dependencies unsupported by Alpine or to run as a non-root user. Alpine's `crond` requires root. Ensure the mounted host directory is writable by the container's `qinglong` user before running:

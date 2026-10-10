@@ -266,7 +266,7 @@ Creation and updates also accept:
 | `allow_multiple_instances` | number | `0` or `1`, allowing concurrent instances |
 | `work_dir` | string | Working directory |
 
-Both create and update require `command` and `schedule`. Schedules support seconds; use valid step expressions such as `*/5`, not bare `/5` or Quartz expressions containing `?`.
+Both create and update require `command` and `schedule`. Five-field schedules and schedules with a seconds field are supported; see [Schedules and time zones](#schedules-and-time-zones) for syntax.
 
 | Method | Full path | Description |
 | --- | --- | --- |
@@ -283,3 +283,23 @@ ql task instance-stop 12 34 --json
 `GET /open/crons/:id/log` accepts `offset` (non-negative byte offset), `limit` (at most 1048576 bytes), and boolean `tail`. Responses include `data`, `logStatus`, `offset`, `nextOffset`, `total` and `truncated`. HTTP chunk sizes use bytes; the CLI's `--tail` option uses lines.
 
 See the [remote CLI guide](/guide/user-guide/cli) for pagination and run responses. The HTTP run endpoint accepts an ID array. An accepted request does not mean script execution has completed.
+
+## Schedules and time zones
+
+A common cron schedule has five fields: minute, hour, day of month, month and day of week. An optional seconds field can be added at the beginning. Legacy shorthand remains compatible; use explicit five-field or six-field schedules for new rules.
+
+| Schedule | Meaning |
+| --- | --- |
+| `*/5 * * * *` | Every five minutes |
+| `*/5 * * * * *` | Every five seconds |
+| `0 0 9 ? * MON` | Every Monday at 09:00 |
+
+Month and weekday names, valid steps such as `*/5` and `0/5`, and compatible `L` and `#` rules are supported. `?` is allowed only in the day-of-month and day-of-week fields. `H`, bare `/N` steps such as `/5`, and unlisted Quartz extensions are not supported.
+
+Supported periodic aliases are `@yearly`, `@annually`, `@monthly`, `@weekly`, `@daily`, `@midnight`, `@hourly` and `@minutely`. `@annually` equals `@yearly`, `@midnight` equals `@daily`, and `@minutely` runs at second 0 of each minute. Startup and one-time tasks use separate `@boot` and `@once` modes.
+
+Rules restricting both day of month and day of week use the Node scheduler with OR semantics: either field can trigger execution, and a time matching both triggers only once. Regular tasks, additional scheduling rules, [subscription](./subscription) cron plans and system Node cron jobs share normalization and scheduling rules. Interval schedules have separate configuration. Cron expressions are validated and normalized through cron-parser; Node scheduling uses node-cron.
+
+Disabling, deleting or updating a task invalidates queued triggers from its previous rule that have not started. During schedule restoration, invalid persisted task or subscription rules are skipped and logged; their configuration is retained for correction.
+
+Rules and aliases use the panel process's time zone. After changing the time zone, restart the relevant services through the settings procedure for it to take effect. In time zones with daylight saving time, nonexistent local times during the spring transition are skipped, and the repeated hour in autumn does not run a second time. Asia/Shanghai is unaffected by this difference. Delayed triggers within the running process can join the existing execution queue; there is no persistent catch-up guarantee while the panel is stopped, or guarantee of a single execution across multiple panels.

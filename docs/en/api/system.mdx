@@ -129,7 +129,7 @@ Checks for system updates.
 PUT /update
 ```
 
-Performs system update.
+Runs `ql update false` in the background to download and verify staged upgrade artifacts, installing dependencies in staging when needed. The initial `200` does not mean that downloading finished or the upgrade was applied. Follow WebSocket `updateSystemVersion` messages for progress and the final `success`/`failed` status. After successful preparation, call the reload endpoint with `{"type":"system"}` to apply the upgrade. See the [maintenance guide](../guide/user-guide/maintenance).
 
 #### Reload System
 ```http
@@ -139,10 +139,11 @@ PUT /reload
 **Request Body**
 ```typescript
 {
-  type?: string | null
+  type?: 'system' | 'data' | '' | null  // system: apply staged upgrade; data: apply staged backup
 }
 ```
 
+Omitting `type` or passing an empty string or `null` only restarts services. This endpoint starts a separate reload process; a `200` response does not mean that reload or health checks have completed.
 
 #### Send Notification
 ```http
@@ -346,7 +347,7 @@ PUT /command-stop
 PUT /data/export
 ```
 
-Returns a compressed backup download. Pass a JSON body such as `{"type":["scripts","config","log"]}` to include these additional data directories. Omitting `type` or passing an empty array exports only `db` and `upload`, excluding scripts, configuration and logs. `base` denotes the base data, not an extra directory. See the [maintenance guide](../guide/user-guide/maintenance) for a complete backup.
+Returns a compressed backup download. Pass a JSON body such as `{"type":["scripts","config","log"]}` to include these additional data directories. Selecting `scripts` automatically includes an existing `script-history` directory. You may also select `script-history` explicitly; it is skipped if it has not been created. Omitting `type` or passing an empty array exports only `db` and `upload`, excluding scripts, history, configuration and logs. `base` denotes the base data, not an extra directory. See the [maintenance guide](../guide/user-guide/maintenance) for a complete backup.
 
 #### Import Data
 ```http

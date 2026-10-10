@@ -3,6 +3,8 @@
 ## Base Path
 `/scripts`
 
+The full public API prefix is `/open/scripts`. The history endpoints and save behavior below require Qinglong 2.23.0 or newer and `scripts` permission. See [script editing history](/guide/user-guide/script-history) for the panel workflow.
+
 ## Endpoints
 
 ### Get Scripts List
@@ -39,7 +41,7 @@ GET /detail
 POST /
 ```
 
-**Request Body** (multipart/form-data)
+**Request body**: use the `file` field in `multipart/form-data` for uploads. Use JSON to create directories or create/save text content.
 ```typescript
 {
   file?: File,           // Uploaded file
@@ -47,23 +49,104 @@ POST /
   path?: string,         // File path
   content?: string,      // File content
   originFilename?: string, // Original file name
-  directory?: string     // Directory name (for creating directories)
+  directory?: string,    // Directory name (for creating directories)
+  skipHistory?: boolean, // Explicit confirmation to save unsupported content without history
+  expectedHash?: string  // Required when skipHistory=true; current content SHA-256
 }
 ```
+
+File uploads, new files and directory creation do not create history automatically. Overwriting an existing script with JSON `content` preserves its previous content. Provide `content` for text saves; an empty string is allowed. When the debugger saves as another existing script, the destination's previous content enters history and the source is backed up before removal. Safe aliases pointing to the same script are handled as an in-place save.
 
 ### Update Script Content
 ```http
 PUT /
 ```
 
-**Request Body**
+**Request body** (`application/json`)
 ```typescript
 {
   filename: string,  // File name
   path?: string,    // File path
-  content: string   // File content
+  content: string,  // File content; an empty string is allowed
+  skipHistory?: boolean,
+  expectedHash?: string // Required when skipHistory=true; 64 hexadecimal SHA-256 characters
 }
 ```
+
+Use JSON to update an existing script's content and the POST endpoint above to upload a file. Changed content preserves the current version before saving; identical content does not add history.
+
+Save and restore `data` fields depend on the result:
+
+| Result | Fields returned |
+| --- | --- |
+| Changed content with history | `content`, `changed: true`, `historyRecorded: true`, `cleanupPending` |
+| Identical content | `content`, `changed: false` |
+| Explicitly confirmed unsupported content saved without history | `content`, `changed: true`, `historyRecorded: false` |
+
+Only the first result includes `cleanupPending`. A value of `true` means the script was saved, but history quota cleanup is pending. Check data directory permissions and free space.
+
+### List script history
+
+```http
+GET /history
+```
+
+The query is `{ filename: string, path?: string }`. History uses `filename`, unlike the existing `GET /detail` query's `file`.
+
+Success returns `{ code: 200, data: { versions, currentHash, limit } }`. Versions are newest first. `limit` is the maximum retained version count (20 by default), and `currentHash` is the SHA-256 of the content currently saved on the server.
+
+| Version field | Meaning |
+| --- | --- |
+| `id` | Version UUID |
+| `createdAt` | ISO timestamp |
+| `source` | `baseline` (content before the first recorded edit), `save`, `restore` or `external` |
+| `hash` | SHA-256 of this version's content |
+| `size` | UTF-8 content size in bytes |
+| `identical` | Whether this version matches the current server content |
+
+### Read historical and current content
+
+```http
+GET /history/detail
+```
+
+The query is `{ filename: string, path?: string, id: string }`. `id` must be a version UUID returned by the list endpoint.
+
+Success `data` is `{ version, current, currentHash }`. `version` contains `id`, `createdAt`, `source`, `hash` and `content`, without the list's `size` or `identical`. `current` is the text saved on the server; it excludes unsaved editor changes.
+
+### Restore a history version
+
+```http
+PUT /history/restore
+```
+
+**JSON request body**
+
+```typescript
+{
+  filename: string,
+  path?: string,
+  id: string,           // Version UUID
+  expectedHash: string  // currentHash from preview; 64 hexadecimal SHA-256 characters
+}
+```
+
+Restoring preserves the current content first. If the file changed after preview, the server returns HTTP 409 and API `code: 409`. Read, compare and confirm again; do not replace the hash and retry automatically. Ordinary content saves do not require this hash, so this does not provide conflict protection for every edit.
+
+### History limits and failures
+
+History supports UTF-8 text up to 1 MiB, including empty files, without NUL or invalid UTF-8. Each script retains at most 20 previous versions. Uploads, new files, renames, deletions, subscription updates and external edits do not record history automatically. Renames do not migrate history, and history cannot recover deleted scripts.
+
+Only a save returning HTTP 413 with top-level `historyUnavailable: true` and `currentHash` can be retried after explicit user confirmation with `skipHistory: true` and that `expectedHash`. The result reports that no history was recorded. A change during confirmation still returns 409. Other 413 failures from archive capacity limits, damaged history and permission errors cannot be bypassed this way.
+
+| HTTP / API code | Meaning |
+| --- | --- |
+| `404` | Script or history version missing, or version already cleaned up |
+| `409` | Current file changed before restore or confirmed save |
+| `413` | Text or history archive capacity limit |
+| `500` | History archive unreadable or damaged |
+
+Validation may return 400, and path/resource permission checks may return 403. Check both the HTTP status and API `code`. See [script editing history](/guide/user-guide/script-history) for overall quotas, cleanup and complete backups.
 
 ### Delete Script
 ```http

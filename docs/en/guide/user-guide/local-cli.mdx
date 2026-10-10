@@ -1,6 +1,6 @@
 # Panel-internal tools
 
-Develop includes TypeScript tools for local script execution and maintenance, delivered with the panel source and internal build. They use a separate command tree from the [remote npm CLI](./cli) and must run on the actual panel host or inside its container. They require Node.js 22.12 or newer, Bash and the interpreters required by your tasks.
+Qinglong includes TypeScript tools for local script execution and maintenance, delivered with the panel source and internal build. They use a separate command tree from the [remote npm CLI](./cli) and must run on the actual panel host or inside its container. They require Bash and the interpreters required by your tasks. Panel builds and regression checks use Node.js 20 and pnpm 8.3.1. The standalone remote CLI requires Node.js 22.12 or newer.
 
 ## Build and run
 
@@ -56,6 +56,8 @@ Here, `ql` means the selected internal entrypoint; you can also use `node /ql/cl
 
 `check` installs dependencies, repairs configuration and reloads services. `reload` restarts services by default; `system/data` applies staged files. `start --no-startup` skips OS startup registration, while `start --reload` skips dependency installation, optional hooks and startup registration.
 
+`update --download-only` (also accepted as `update false`) downloads and verifies staged artifacts and, when needed, installs dependencies in the staging directory. It does not replace the installed program or restart services. `reload --target system` applies a prepared system upgrade after verifying it again; `reload --target data` applies a staged backup, replacing current data. See [maintenance](./maintenance) for upgrade sources, program recovery and data backups.
+
 Place maintenance options `--root`, `--data-dir` and `--json` before `--`. Password positionals are visible in process arguments; use a trusted terminal. `repo/raw` uses `QL_DIR/QL_DATA_DIR` and does not accept `--root/--json`. Repository filters use POSIX extended regular expressions through `grep -E`.
 
 ## Script arguments and compatibility
@@ -63,11 +65,16 @@ Place maintenance options `--root`, `--data-dir` and `--json` before `--`. Passw
 ```bash
 # Put runner options before the script
 node /ql/cli/dist/ql.js task exec --root /ql demo.js now
+# Limit script execution time
+node /ql/cli/dist/ql.js task exec --root /ql --timeout 30s demo.js now
+node /ql/cli/dist/ql.js task exec --root /ql -m 5m demo.py
 # Arguments after -- go to the script
 node /ql/cli/dist/ql.js task exec --root /ql demo.js -- --mode daily
 ```
 
 `now` skips random delay; `conc` and `desi` support account selection. Configuration and hooks remain Bash. With `--json`, script output goes to stderr and the final result goes to stdout, preserving the script exit code.
+
+`--timeout`/`-m` accepts a positive decimal duration with `s`, `m`, `h`, or `d`; values without a suffix are seconds. Zero, negative values, invalid units and durations beyond the timer limit are rejected. Without this option, `CommandTimeoutTime` applies. A timeout terminates the script and its descendants, returns exit code `124`, and sets `timedOut` to `true` in the JSON result. This is a local execution limit; the [remote npm CLI](./cli) uses the same option name only for HTTP request waiting time.
 
 Compatibility forms include `ql task <script>`, `task <script>` and `ql local <command>`. Use explicit `task exec` for scripts named like API actions. With `QL_DIR` configured, bare `ql task` or `task` lists JavaScript scripts. `update false` means `--download-only`; `reload system/data/services` maps to `--target`.
 

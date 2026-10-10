@@ -4,7 +4,7 @@ These examples use the [Compose deployment](../getting-started/installation-guid
 
 ## Back up before upgrading
 
-Back up the entire persistent data directory, including databases, scripts, configuration and logs. Stop the panel before archiving to avoid copying a database while it is being written:
+Back up the entire persistent data directory, including databases, scripts, configuration, logs and the `script-history` directory if it has been created. Stop the panel before archiving to avoid copying a database while it is being written:
 
 ```bash
 docker compose stop qinglong
@@ -16,6 +16,10 @@ Confirm that archiving succeeded before upgrading. Backups may contain account i
 
 ## Upgrade the image
 
+This release keeps the existing runtime configuration: the default Debian image uses Debian 12 and Node.js 20, while the default Alpine image installs Node.js through APK. Both default images use Python 3.11. Runtime migration is deferred to a later release. See [Docker deployment](../getting-started/installation-guide/docker) for the configuration. An in-panel upgrade does not replace the container operating system, Node.js or Python; changing those requires pulling an image and recreating the container.
+
+After upgrading, try representative JavaScript, Python and Shell tasks, and check subscriptions and notifications. User-installed dependencies may need changes for a new runtime. If native modules fail to load, Python extensions fail to import, or modules are missing, reinstall the affected dependencies through Dependency Management in the new container and inspect installation and task logs. Python 3.10 [reached end of life](https://devguide.python.org/versions/) on 2026-10-01; users of older compatibility images should test their scripts on Python 3.11.
+
 ```bash
 docker compose pull qinglong
 docker compose up -d qinglong
@@ -25,6 +29,20 @@ docker compose logs --tail 100 qinglong
 Verify sign-in, script directories, tasks and logs. To pin a version, select a published image tag or digest in `compose.yaml` before updating.
 
 An image downgrade alone is not a complete rollback: newer versions may change data structures. Restore a matching image and data backup together.
+
+## Upgrade from the panel
+
+System Update in Settings first downloads and verifies staged artifacts. Wait for completion, then reload the system to apply the upgrade. An initial API `200` only means that background preparation started; WebSocket messages report the download and verification result. You can also run these two steps on the panel host or inside its container:
+
+```bash
+ql update false
+# Apply only after download and verification succeed
+ql reload system
+```
+
+Preparation checks the static build manifest, file hashes, and consistency with the source revision and lockfile specified by that manifest. Required dependencies are installed in staging, and artifacts are verified again before application. `stable`/`debian` uses the `master` source; `develop`/`debian-dev` uses `develop`. The [internal tools](./local-cli) expose the same steps as `update --download-only` and `reload --target system`.
+
+A system upgrade preserves user data and `.env`. If program replacement fails or the new service does not become ready within the roughly 60-second health-check window, the updater attempts to restore the old program and start the old service. This does not undo database or user-data changes that already occurred, so take a complete backup first. If recovery fails, keep remaining backups, staged artifacts and upgrade logs, and recover from your backup instead of repeatedly running the updater.
 
 ## Restore a backup
 
@@ -45,3 +63,5 @@ Test restores in an isolated environment first, with scheduled tasks disabled or
 | Unknown `ql` command | Use `command -v ql` and `ql --help` to distinguish the [remote CLI](./cli) from [internal tools](./local-cli) |
 
 `ql check` installs dependencies, repairs the environment and reloads services. Start diagnosis with logs and configuration. Remove tokens, environment values and private repository credentials before sharing logs.
+
+See the [task API](../../api/crontab) for scheduling and timezone rules. In timezones with daylight saving, nonexistent spring-forward local times are skipped and the repeated autumn hour is not run a second time; `Asia/Shanghai` has no DST adjustment. There is no guarantee of persistent catch-up while the process is stopped. Invalid saved task or subscription rules are skipped with diagnostics, leaving their configuration available for correction.

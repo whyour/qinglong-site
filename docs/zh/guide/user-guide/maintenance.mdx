@@ -4,7 +4,7 @@
 
 ## 升级前备份
 
-备份应覆盖整个持久化数据目录，包括数据库、脚本、配置和日志。为避免复制正在写入的数据库，先停止面板，再打包：
+备份应覆盖整个持久化数据目录，包括数据库、脚本、配置、日志以及已创建的 `script-history` 脚本历史目录。为避免复制正在写入的数据库，先停止面板，再打包：
 
 ```bash
 docker compose stop qinglong
@@ -16,6 +16,10 @@ docker compose start qinglong
 
 ## 升级镜像
 
+本次版本沿用现有运行时：默认 Debian 镜像使用 Debian 12 与 Node.js 20；默认 Alpine 镜像通过 APK 安装 Node.js，两种默认镜像使用 Python 3.11。运行时迁移将在后续版本处理。具体配置见 [Docker 部署](../getting-started/installation-guide/docker)。面板内升级不会替换容器的系统、Node.js 或 Python；更换基础运行时需要拉取镜像并重新创建容器。
+
+升级后先试运行具有代表性的 JavaScript、Python 和 Shell 任务，检查订阅及通知。用户安装的依赖不保证跨运行时兼容；出现原生模块加载错误、Python 扩展导入失败或缺失模块时，在新容器的依赖管理中重新安装对应依赖，并查看安装及任务日志。Python 3.10 已于 2026-10-01 [结束维护](https://devguide.python.org/versions/)，使用旧兼容镜像的用户应验证脚本在 Python 3.11 上的运行情况。
+
 ```bash
 docker compose pull qinglong
 docker compose up -d qinglong
@@ -25,6 +29,20 @@ docker compose logs --tail 100 qinglong
 检查登录、脚本目录、任务和日志是否正常。需要固定版本时，将 `compose.yaml` 中的镜像改为所选的已发布标签或摘要后再更新。
 
 不要将降级镜像视为完整回滚：新版可能改变数据结构。回滚时使用与备份相匹配的镜像和数据。
+
+## 面板内升级
+
+设置中的系统更新先下载并校验暂存产物，等待完成提示后，重载系统才会应用升级。API 的初始 `200` 只表示已启动后台准备；下载或校验结果通过 WebSocket 报告。也可在面板宿主机或容器内分两步执行：
+
+```bash
+ql update false
+# 确认下载及校验成功后应用
+ql reload system
+```
+
+准备阶段核对静态构建清单、文件哈希，以及清单所指定源码和锁文件的一致性；必要依赖在暂存目录安装，应用前再次校验。`stable`/`debian` 使用 `master` 来源，`develop`/`debian-dev` 使用 `develop` 来源。[内部工具](./local-cli)的 `update --download-only` 和 `reload --target system` 对应这两个步骤。
+
+系统升级保留用户数据和 `.env`。程序替换失败或新服务未在约 60 秒的健康检查窗口内就绪时，尝试恢复旧程序并启动旧服务；这不会撤销已经发生的数据库或用户数据变更。升级前仍须完整备份。若恢复失败，保留剩余备份、暂存产物和升级日志，按备份处理，避免反复盲目执行更新。
 
 ## 恢复备份
 
@@ -45,3 +63,5 @@ docker compose logs --tail 100 qinglong
 | `ql` 不识别命令 | 用 `command -v ql`、`ql --help` 确认是[远程 CLI](./cli)还是[内部工具](./local-cli) |
 
 `ql check` 会安装依赖、修复并重载服务；初步排查先查看日志和配置。日志分享前请移除 token、环境变量值和私有仓库凭据。
+
+定时规则和时区边界见[任务 API](../../api/crontab)。使用夏令时的时区会跳过春季不存在的当地时间，秋季重复小时不执行第二次；`Asia/Shanghai` 不受夏令时影响。停机期间不提供持久化补跑保证；无效的已保存任务或订阅规则会跳过并记录诊断，配置仍保留供修正。

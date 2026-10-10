@@ -1,0 +1,27 @@
+# Script editing history
+
+Qinglong 2.23.0 adds history for content saved through the panel. Open “History versions” in the script toolbar, then choose a version to compare it with the script currently saved on the server. Desktop uses a side-by-side comparison; mobile uses an inline comparison. Unsaved editor changes are not included.
+
+Restoring a version requires confirmation. Save or discard any unsaved editor changes first. A restore also preserves the current script content, so you can restore it again from history.
+
+## Which changes are recorded
+
+Saving changed content to an existing script through the editor or debugger records the previous content, including the content before the first edit. Saving identical content does not add a version.
+
+Uploads, new files, renames, deletions, subscription updates and edits outside the panel do not create history automatically. After an external edit, the next panel save can preserve the content that exists at that moment. It cannot recover the content before the external edit. Renaming a file does not migrate its history, and history cannot recover a deleted script.
+
+History is separated by script path, so files with the same name in different directories have separate history. Safe symbolic links pointing to the same script share its history.
+
+## Limits and cleanup
+
+Each script retains at most 20 previous versions. History supports UTF-8 text scripts up to 1 MiB, including empty files. If the current file or new content falls outside this range, the panel asks you to confirm saving without history. Cancelling preserves the file and your draft. Before a confirmed save, the panel checks the current file again to prevent overwriting a change made during confirmation. This option cannot bypass damaged history or storage permission errors.
+
+The overall cleanup targets are 32 MiB of compressed history and at most 1,000 scripts. After a successful save, cleanup removes the complete history of the least recently updated scripts first. It does not delete their current script files.
+
+If the panel reports pending history cleanup, the script has already been saved. Check permissions and free space in the data directory. Later saves retry cleanup; usage can temporarily exceed the targets while cleanup fails.
+
+## Backup and restore
+
+History lives in the `script-history` subdirectory of the data directory. Include it when backing up the complete data directory. Exporting `scripts` through the system API also includes `script-history` when it exists; the default export includes only the database and uploaded files.
+
+See [maintenance and troubleshooting](./maintenance) for full backups and restores, the [Script API](/api/script) for automated reads and restores, and the [CLI guide](./cli) for remote commands.
