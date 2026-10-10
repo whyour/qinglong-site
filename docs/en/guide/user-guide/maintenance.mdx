@@ -50,6 +50,10 @@ Stop the panel and move the current `data` directory aside. Extract the backup i
 
 Test restores in an isolated environment first, with scheduled tasks disabled or external services disconnected to avoid duplicate real executions.
 
+## Internal API token renewal
+
+Qinglong 2.23.0 fixes missing proactive renewal of system tokens and concurrent authentication-cache updates. Scheduled generation and a restarted generation interval renew proactively so tokens remain usable during long-running operation. The panel’s built-in Shell API checks the token before each request and refreshes and retries once after a 401 response; other errors are not automatically retried. The independent remote CLI uses its configured application credentials or access token; see the authentication checks below.
+
 ## Common problems
 
 | Symptom | Checks |
