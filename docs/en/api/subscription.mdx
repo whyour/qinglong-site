@@ -36,6 +36,7 @@ POST /
   url: string,           // Subscription URL
   whitelist?: string,    // Whitelist
   blacklist?: string,    // Blacklist
+  skipFiles?: string,    // Sync exclusions: one relative path/directory ending in / per line
   branch?: string,       // Branch
   dependences?: string,  // Dependencies
   pull_type?: string,    // Pull type
@@ -50,6 +51,18 @@ POST /
   autoDelCron?: boolean  // Auto delete cron task
 }
 ```
+
+### Subscription file synchronization (pending fix release)
+
+The blacklist prevents task creation for matching files. Scripts matched by the dependency-file rule are still synchronized. Use **Files Excluded from Sync** (`skipFiles`) to preserve local edits without changing dependency rules.
+
+Enter one exact **repository-relative path** per line. A trailing `/` excludes a directory. These entries are not regular expressions; do not include the subscription directory prefix. For example:
+
+```json
+{"skipFiles": "env.js\nconfig/\nsendNotify.js"}
+```
+
+Matching local files are preserved against repository, bundled notification and local dependency copies, including automatic file deletion for obsolete tasks. The repository is still cloned and other files still synchronize normally. Leaving the option empty preserves existing behavior. Excluded files that do not exist locally are not downloaded and do not generate tasks with missing scripts.
 
 ### Update Subscription
 
@@ -121,6 +134,18 @@ GET /:id/log
 ```
 
 Query parameters accept `offset` (non-negative integer byte offset), `limit` (1–1048576 bytes) and `tail` (boolean). The response includes log text in `data`, plus `offset`, `nextOffset`, `total` and `truncated`. Use `nextOffset` to continue reading, rather than counting characters. See the [Log API](./log).
+
+### Subscription file synchronization (pending fix release)
+
+The blacklist prevents task creation for matching files. Scripts matched by the dependency-file rule are still synchronized. Use **Files Excluded from Sync** (`skipFiles`) to preserve local edits without changing dependency rules.
+
+Enter one exact **repository-relative path** per line. A trailing `/` excludes a directory. These entries are not regular expressions; do not include the subscription directory prefix. For example:
+
+```json
+{"skipFiles": "env.js\nconfig/\nsendNotify.js"}
+```
+
+Matching local files are preserved against repository, bundled notification and local dependency copies, including automatic file deletion for obsolete tasks. The repository is still cloned and other files still synchronize normally. Leaving the option empty preserves existing behavior. Excluded files that do not exist locally are not downloaded and do not generate tasks with missing scripts.
 
 ### Update Subscription Status
 ```http
