@@ -1,10 +1,33 @@
 # 维护与故障排查
 
-以下命令以 [Compose 部署](../getting-started/installation-guide/docker-compose)为例，在保存 `compose.yaml` 的部署目录执行。服务名为 `qinglong`，数据目录为 `./data`；其他部署方式请替换实际名称和路径。
+维护可以通过面板界面、部署工具或面板内置命令进行。执行命令前，先确认入口和执行位置：
+
+| 入口 | 执行位置 | 示例 |
+| --- | --- | --- |
+| Docker Compose | 宿主机上保存 `compose.yaml` 的部署目录 | `docker compose logs --tail 100 qinglong` |
+| 默认的[内置 Shell 命令](./basic-explanation) | 面板所在的宿主机或容器内；Docker 部署需进入容器或使用 `docker exec` | `task folder/hello.js`、`ql check`、`ql update` |
+| 可选的[内部 TypeScript 工具](./local-cli) | 包含完整内部构建的面板宿主机或容器内 | `node /ql/cli/dist/ql.js reload --root /ql` |
+| [远程 npm CLI](./cli) | 已安装 `@whyour/qinglong-cli` 并配置连接的客户端终端 | `ql auth status --scope crons --json` |
+
+本文 Docker 命令以 [Compose 部署](../getting-started/installation-guide/docker-compose)为例：服务名和容器名均为 `qinglong`，宿主机数据目录 `./data` 挂载到容器的 `/ql/data`。请按实际部署替换名称和路径。使用 `docker run`、Podman 或 Linux 部署时，应使用对应工具停止、启动和更新服务，不能只替换 Compose 命令中的名称。
 
 ## 升级前备份
 
-备份应覆盖整个持久化数据目录，包括数据库、脚本、配置、日志以及已创建的 `script-history` 脚本历史目录。为避免复制正在写入的数据库，先停止面板，再打包：
+### 面板备份
+
+打开「系统设置 → 其他设置 → 数据备份还原」，点击「备份」，选择模块后开始备份，下载文件 `data.tgz`。
+
+默认只勾选必选的「基础数据」，包含 `db` 和 `upload`。配置文件、脚本文件、日志文件、依赖文件、系统日志、依赖缓存、远程脚本缓存、远程仓库缓存和 SSH 文件缓存需要另外勾选。迁移或还原时需要哪些内容，就应在备份时选中哪些模块；只下载默认备份不会包含脚本和配置文件。选择脚本文件时，已创建的 `script-history` 脚本历史目录也会包含在导出中。
+
+面板导出期间服务仍在运行。需要数据库与文件保持一致的完整升级备份时，使用下面的停机备份方式。
+
+### 停机备份整个数据目录
+
+本例备份的是**宿主机部署目录下的整个 `./data` 目录**，即 `compose.yaml` 中 `./data:/ql/data` 挂载的宿主机目录，对应容器内的 `/ql/data`。它包含数据库、脚本、配置、日志以及已创建的 `script-history` 脚本历史目录等持久化数据。
+
+例如，`compose.yaml` 位于 `/opt/qinglong/`，则进入 `/opt/qinglong/` 执行下面的命令，备份的目录就是 `/opt/qinglong/data/`，生成的 `qinglong-data-*.tar.gz` 也保存在 `/opt/qinglong/`。如果实际挂载目录不同，请按挂载配置调整备份和恢复路径，并将压缩包保存在被备份的数据目录之外。
+
+在宿主机的 Compose 部署目录执行，先停止容器，再打包，避免复制正在写入的数据库：
 
 ```bash
 docker compose stop qinglong
@@ -12,13 +35,45 @@ sudo tar -czf "qinglong-data-$(date +%Y%m%d-%H%M%S).tar.gz" data
 docker compose start qinglong
 ```
 
-确认打包成功后再继续升级。备份中可能包含账号信息、应用密钥和环境变量，应保存在受控位置。建议记录当前镜像版本或摘要，并将备份复制到独立存储。
+确认打包成功且能正常读取归档后再继续升级；打包失败时应先排查并重新备份。另行保存 `compose.yaml`、部署使用的 `.env` 和其他外部挂载文件，它们不包含在上面的数据归档中。
+
+备份中可能包含账号信息、应用密钥和环境变量，应保存在受控位置。记录当前面板版本和镜像标签或摘要，并将备份复制到独立存储。
+
+## 面板内升级
+
+升级前先完成备份。打开「系统设置 → 其他设置 → 检查更新」，查看版本和更新说明，点击「下载更新」。下载成功后，确认「重启」以应用更新；仅下载成功尚未完成升级。
+
+也可使用默认的内置 Shell 命令 `ql update` 更新并重启青龙。Docker 部署在宿主机执行以下命令，由它调用容器内的工具：
+
+```bash
+docker exec -it qinglong ql update
+```
+
+Linux 部署在面板所在的宿主机终端执行 `ql update`。选择了内部 TypeScript 入口时，按[面板内部工具](./local-cli)说明使用对应的更新命令。远程 npm CLI 使用独立命令树，不能照搬这些本机命令。
+
+面板和内置命令更新青龙程序；更新 Docker 镜像及其运行环境使用下一节的流程。更新后检查面板版本、登录、脚本目录、任务和日志。
+
+也可以分两步下载、校验并应用更新，在面板宿主机或容器内执行：
+
+```bash
+ql update false
+# 确认下载及校验成功后应用
+ql reload system
+```
+
+API 的初始 `200` 只表示已启动后台准备；下载或校验结果通过 WebSocket 报告。
+
+准备阶段核对静态构建清单、文件哈希，以及清单所指定源码和锁文件的一致性；必要依赖在暂存目录安装，应用前再次校验。`stable`/`debian` 使用 `master` 来源，`develop`/`debian-dev` 使用 `develop` 来源。[内部工具](./local-cli)的 `update --download-only` 和 `reload --target system` 对应这两个步骤。
+
+系统升级保留用户数据和 `.env`。程序替换失败或新服务未在约 60 秒的健康检查窗口内就绪时，尝试恢复旧程序并启动旧服务；这不会撤销已经发生的数据库或用户数据变更。升级前仍须完整备份。若恢复失败，保留剩余备份、暂存产物和升级日志，按备份处理，避免反复盲目执行更新。
 
 ## 升级镜像
 
 本次版本沿用现有运行时：默认 Debian 镜像使用 Debian 12 与 Node.js 20；默认 Alpine 镜像通过 APK 安装 Node.js，两种默认镜像使用 Python 3.11。运行时迁移将在后续版本处理。具体配置见 [Docker 部署](../getting-started/installation-guide/docker)。面板内升级不会替换容器的系统、Node.js 或 Python；更换基础运行时需要拉取镜像并重新创建容器。
 
 升级后先试运行具有代表性的 JavaScript、Python 和 Shell 任务，检查订阅及通知。用户安装的依赖不保证跨运行时兼容；出现原生模块加载错误、Python 扩展导入失败或缺失模块时，在新容器的依赖管理中重新安装对应依赖，并查看安装及任务日志。Python 3.10 已于 2026-10-01 [结束维护](https://devguide.python.org/versions/)，使用旧兼容镜像的用户应验证脚本在 Python 3.11 上的运行情况。
+
+在宿主机的 Compose 部署目录执行：
 
 ```bash
 docker compose pull qinglong
@@ -30,25 +85,29 @@ docker compose logs --tail 100 qinglong
 
 不要将降级镜像视为完整回滚：新版可能改变数据结构。回滚时使用与备份相匹配的镜像和数据。
 
-## 面板内升级
-
-设置中的系统更新先下载并校验暂存产物，等待完成提示后，重载系统才会应用升级。API 的初始 `200` 只表示已启动后台准备；下载或校验结果通过 WebSocket 报告。也可在面板宿主机或容器内分两步执行：
-
-```bash
-ql update false
-# 确认下载及校验成功后应用
-ql reload system
-```
-
-准备阶段核对静态构建清单、文件哈希，以及清单所指定源码和锁文件的一致性；必要依赖在暂存目录安装，应用前再次校验。`stable`/`debian` 使用 `master` 来源，`develop`/`debian-dev` 使用 `develop` 来源。[内部工具](./local-cli)的 `update --download-only` 和 `reload --target system` 对应这两个步骤。
-
-系统升级保留用户数据和 `.env`。程序替换失败或新服务未在约 60 秒的健康检查窗口内就绪时，尝试恢复旧程序并启动旧服务；这不会撤销已经发生的数据库或用户数据变更。升级前仍须完整备份。若恢复失败，保留剩余备份、暂存产物和升级日志，按备份处理，避免反复盲目执行更新。
-
 ## 恢复备份
 
-停止面板，把当前 `data` 移到其他位置保留，再将备份解压到部署目录，使最终结构仍为 `./data/...`。确认文件所有者和权限符合运行用户要求后启动面板。不要直接把备份覆盖到正在运行的数据库上。
+恢复前先备份当前数据，并确认备份包含所需模块。恢复验证建议在隔离环境中进行，提前禁用定时任务或断开外部服务，避免重启后重复执行真实任务。
 
-首次恢复建议在隔离环境中验证，并禁用定时任务或断开外部服务，避免恢复验证期间重复执行真实任务。
+### 通过面板还原
+
+打开「系统设置 → 其他设置 → 数据备份还原」，点击「还原数据」并上传面板导出的 `data.tgz`。上传成功后，文件先被解压到暂存目录；在「确认重启」对话框中确认后，才会应用数据并重启服务。
+
+还原会替换当前数据。默认 Shell 恢复流程会先清除当前数据目录中的非隐藏内容，再移入暂存数据。因此，只备份了基础数据时，还原不会保留当前的脚本、配置等未备份模块。请核对备份范围后再确认重启。
+
+如果已经成功上传并解压备份，但应用数据失败，面板提示可在容器内执行 `ql reload data`。默认 Shell 入口的 Docker 部署可在宿主机执行：
+
+```bash
+docker exec -it qinglong ql reload data
+```
+
+该命令会再次替换数据并重启服务，必须先确认暂存备份存在且完整。选择了内部 TypeScript 入口时，使用[对应入口](./local-cli)的 `reload --target data`。
+
+### 手动恢复完整数据归档
+
+恢复前面停机备份得到的 `qinglong-data-*.tar.gz` 时，在宿主机的 Compose 部署目录停止容器，把当前 `data` 移到其他位置保留，再将备份解压到部署目录，使最终结构仍为 `./data/...`。确认文件所有者和权限符合容器运行用户要求后，执行 `docker compose start qinglong`。不要直接把备份覆盖到正在运行的数据库上。
+
+检查登录、脚本、配置、任务和日志。需要回滚版本时，按上一节说明使用与备份相匹配的镜像；更改镜像配置后使用 `docker compose up -d qinglong` 重建容器。
 
 ## 系统内部 API 令牌
 
@@ -58,14 +117,14 @@ ql reload system
 
 | 现象 | 排查步骤 |
 | --- | --- |
-| 无法访问面板 | 执行 `docker compose ps` 和 `docker compose logs --tail 100 qinglong`，核对端口映射、`QlPort`、代理路径及防火墙 |
-| 找不到脚本 | 核对脚本管理中的路径；子目录脚本使用 `task folder/hello.js` |
+| 无法访问面板 | 在宿主机部署目录执行 `docker compose ps` 和 `docker compose logs --tail 100 qinglong`，核对端口映射、`QlPort`、代理路径及防火墙 |
+| 找不到脚本 | 核对脚本管理中的路径；面板任务命令中子目录脚本使用 `task folder/hello.js`，Docker 宿主机手动运行可用 `docker exec -it qinglong task folder/hello.js` |
 | 缺少 Node/Python 模块 | 在依赖管理中选择对应语言安装依赖，检查安装日志后再运行任务 |
 | 定时未触发 | 检查任务是否启用、定时规则和时区；查看排队状态及运行中实例 |
 | 挂载目录不可写 | 核对宿主机目录权限、容器运行用户和 SELinux 配置；非 root 部署参考 [Docker 说明](../getting-started/installation-guide/docker) |
-| CLI 返回 401/403 | 检查凭据或令牌是否有效，使用 `ql auth status --scope crons --json` 检查目标模块；确认环境令牌没有覆盖已保存配置 |
-| `ql` 不识别命令 | 用 `command -v ql`、`ql --help` 确认是[远程 CLI](./cli)还是[内部工具](./local-cli) |
+| 远程 npm CLI 返回 401/403 | 在客户端终端检查凭据或令牌，使用 `ql auth status --scope crons --json` 检查任务模块；其他模块替换为对应 scope。确认 `QL_URL`、`QL_ACCESS_TOKEN` 没有覆盖已保存配置 |
+| `ql` 不识别命令 | 在执行命令的终端用 `command -v ql` 检查路径，再按本文入口表确认是默认 Shell、内部 TypeScript 工具还是远程 npm CLI。远程和 TypeScript 入口用 `--help` 查看命令；默认 Shell 命令参考[基础说明](./basic-explanation) |
 
-`ql check` 会安装依赖、修复并重载服务；初步排查先查看日志和配置。日志分享前请移除 token、环境变量值和私有仓库凭据。
+内置 `ql check` 会安装依赖、修复并重载服务；初步排查先查看日志和配置。确需修复时，默认 Shell 入口的 Docker 部署可在宿主机执行 `docker exec -it qinglong ql check`，Linux 部署在面板宿主机执行。内部 TypeScript 入口的使用方式见[面板内部工具](./local-cli)。日志分享前请移除 token、环境变量值和私有仓库凭据。
 
 定时规则和时区边界见[任务 API](../../api/crontab)。使用夏令时的时区会跳过春季不存在的当地时间，秋季重复小时不执行第二次；`Asia/Shanghai` 不受夏令时影响。停机期间不提供持久化补跑保证；无效的已保存任务或订阅规则会跳过并记录诊断，配置仍保留供修正。

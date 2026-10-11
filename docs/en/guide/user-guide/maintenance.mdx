@@ -1,10 +1,33 @@
 # Maintenance and troubleshooting
 
-These examples use the [Compose deployment](../getting-started/installation-guide/docker-compose). Run commands from the directory containing `compose.yaml`, with service `qinglong` and data directory `./data`. Substitute actual names and paths for other installations.
+Maintenance is available through the panel UI, deployment tools and built-in commands. Check the entrypoint and execution environment before running a command:
+
+| Entrypoint | Execution environment | Example |
+| --- | --- | --- |
+| Docker Compose | The deployment directory containing `compose.yaml` on the host | `docker compose logs --tail 100 qinglong` |
+| Default [built-in Shell commands](./basic-explanation) | The panel host or container; for Docker, enter the container or use `docker exec` | `task folder/hello.js`, `ql check`, `ql update` |
+| Optional [internal TypeScript tools](./local-cli) | The panel host or container containing the complete internal build | `node /ql/cli/dist/ql.js reload --root /ql` |
+| [Remote npm CLI](./cli) | A client terminal with `@whyour/qinglong-cli` installed and its connection configured | `ql auth status --scope crons --json` |
+
+The Docker examples use the [Compose deployment](../getting-started/installation-guide/docker-compose): both the service and container are named `qinglong`, and host directory `./data` is mounted at `/ql/data` in the container. Substitute actual names and paths. For `docker run`, Podman or Linux installations, use the corresponding tools to stop, start and update the service; replacing names in Compose commands alone is insufficient.
 
 ## Back up before upgrading
 
-Back up the entire persistent data directory, including databases, scripts, configuration, logs and the `script-history` directory if it has been created. Stop the panel before archiving to avoid copying a database while it is being written:
+### Back up through the panel
+
+Open **System Settings → Other Settings → Data Backup and Restore**, click **Backup**, select the modules and start the backup. Download the resulting `data.tgz` file.
+
+Only the required **Base Data** module is selected by default; it includes `db` and `upload`. Configuration files, scripts, logs, dependency files, system logs, dependency caches, remote script caches, remote repository caches and SSH file caches require additional selections. Select every module you need for migration or restoration. The default backup does not include scripts or configuration files. Selecting scripts also includes the `script-history` directory in the export if it has been created.
+
+The service keeps running during panel exports. For a complete upgrade backup with consistent database and file contents, use the stopped-container backup below.
+
+### Back up the entire data directory with the service stopped
+
+This example backs up **the entire `./data` directory in the deployment directory on the host**. It is the host directory in the `./data:/ql/data` mount in `compose.yaml`, corresponding to `/ql/data` inside the container. It contains persistent data such as databases, scripts, configuration, logs and the `script-history` directory if it has been created.
+
+For example, if `compose.yaml` is in `/opt/qinglong/`, change to `/opt/qinglong/` before running the commands below. They back up `/opt/qinglong/data/` and save the resulting `qinglong-data-*.tar.gz` in `/opt/qinglong/` as well. If your mount uses a different directory, adjust the backup and restore paths to match your mount configuration and keep the archive outside the data directory being backed up.
+
+Run these commands in the Compose deployment directory on the host. Stop the container before archiving to avoid copying a database while it is being written:
 
 ```bash
 docker compose stop qinglong
@@ -12,13 +35,45 @@ sudo tar -czf "qinglong-data-$(date +%Y%m%d-%H%M%S).tar.gz" data
 docker compose start qinglong
 ```
 
-Confirm that archiving succeeded before upgrading. Backups may contain account information, application secrets and environment values; keep them in controlled storage. Record the current image version or digest and copy the backup to separate storage.
+Confirm that archiving succeeded and that the archive can be read before upgrading. If archiving fails, resolve the issue and create a new backup first. Save `compose.yaml`, the deployment's `.env` and other externally mounted files separately; the data archive above does not include them.
+
+Backups may contain account information, application secrets and environment values; keep them in controlled storage. Record the current panel version and image tag or digest, and copy the backup to separate storage.
+
+## Upgrade from the panel
+
+Complete a backup first. Open **System Settings → Other Settings → Check for Updates**, review the version and release notes, and click **Download Update**. After the download succeeds, confirm **Restart** to apply it. Downloading alone does not complete the upgrade.
+
+The default built-in Shell command `ql update` also updates and restarts Qinglong. For Docker, run the following on the host to invoke the tool inside the container:
+
+```bash
+docker exec -it qinglong ql update
+```
+
+For Linux installations, run `ql update` in a terminal on the panel host. If you selected the internal TypeScript entrypoint, use its update command as described in [panel-internal tools](./local-cli). The remote npm CLI has a separate command tree and cannot use these local commands directly.
+
+Panel and built-in updates update the Qinglong application. To update the Docker image and its runtime environment, follow the next section. After updating, verify the panel version, sign-in, script directories, tasks and logs.
+
+You can also download, verify and apply an update in two steps on the panel host or inside its container:
+
+```bash
+ql update false
+# Apply only after download and verification succeed
+ql reload system
+```
+
+An initial API `200` only means that background preparation started; WebSocket messages report the download and verification result.
+
+Preparation checks the static build manifest, file hashes, and consistency with the source revision and lockfile specified by that manifest. Required dependencies are installed in staging, and artifacts are verified again before application. `stable`/`debian` uses the `master` source; `develop`/`debian-dev` uses `develop`. The [internal tools](./local-cli) expose the same steps as `update --download-only` and `reload --target system`.
+
+A system upgrade preserves user data and `.env`. If program replacement fails or the new service does not become ready within the roughly 60-second health-check window, the updater attempts to restore the old program and start the old service. This does not undo database or user-data changes that already occurred, so take a complete backup first. If recovery fails, keep remaining backups, staged artifacts and upgrade logs, and recover from your backup instead of repeatedly running the updater.
 
 ## Upgrade the image
 
 This release keeps the existing runtime configuration: the default Debian image uses Debian 12 and Node.js 20, while the default Alpine image installs Node.js through APK. Both default images use Python 3.11. Runtime migration is deferred to a later release. See [Docker deployment](../getting-started/installation-guide/docker) for the configuration. An in-panel upgrade does not replace the container operating system, Node.js or Python; changing those requires pulling an image and recreating the container.
 
 After upgrading, try representative JavaScript, Python and Shell tasks, and check subscriptions and notifications. User-installed dependencies may need changes for a new runtime. If native modules fail to load, Python extensions fail to import, or modules are missing, reinstall the affected dependencies through Dependency Management in the new container and inspect installation and task logs. Python 3.10 [reached end of life](https://devguide.python.org/versions/) on 2026-10-01; users of older compatibility images should test their scripts on Python 3.11.
+
+Run these commands in the Compose deployment directory on the host:
 
 ```bash
 docker compose pull qinglong
@@ -30,25 +85,29 @@ Verify sign-in, script directories, tasks and logs. To pin a version, select a p
 
 An image downgrade alone is not a complete rollback: newer versions may change data structures. Restore a matching image and data backup together.
 
-## Upgrade from the panel
-
-System Update in Settings first downloads and verifies staged artifacts. Wait for completion, then reload the system to apply the upgrade. An initial API `200` only means that background preparation started; WebSocket messages report the download and verification result. You can also run these two steps on the panel host or inside its container:
-
-```bash
-ql update false
-# Apply only after download and verification succeed
-ql reload system
-```
-
-Preparation checks the static build manifest, file hashes, and consistency with the source revision and lockfile specified by that manifest. Required dependencies are installed in staging, and artifacts are verified again before application. `stable`/`debian` uses the `master` source; `develop`/`debian-dev` uses `develop`. The [internal tools](./local-cli) expose the same steps as `update --download-only` and `reload --target system`.
-
-A system upgrade preserves user data and `.env`. If program replacement fails or the new service does not become ready within the roughly 60-second health-check window, the updater attempts to restore the old program and start the old service. This does not undo database or user-data changes that already occurred, so take a complete backup first. If recovery fails, keep remaining backups, staged artifacts and upgrade logs, and recover from your backup instead of repeatedly running the updater.
-
 ## Restore a backup
 
-Stop the panel and move the current `data` directory aside. Extract the backup into the deployment directory so the resulting structure remains `./data/...`. Check ownership and permissions for the runtime user, then start the panel. Do not overwrite a running database with backup files.
+Back up the current data first and confirm that the backup to restore includes all required modules. Test restores in an isolated environment, disabling scheduled tasks or disconnecting external services beforehand to avoid duplicate real executions after restart.
 
-Test restores in an isolated environment first, with scheduled tasks disabled or external services disconnected to avoid duplicate real executions.
+### Restore through the panel
+
+Open **System Settings → Other Settings → Data Backup and Restore**, click **Restore Data**, and upload the panel-exported `data.tgz`. A successful upload extracts the files into a staging directory. Confirming the **Restart** dialog then applies the data and restarts the service.
+
+Restoration replaces current data. The default Shell restore process first removes non-hidden contents of the current data directory, then moves staged data into it. Restoring a backup containing only Base Data therefore does not preserve current scripts, configuration or other modules excluded from the backup. Check the backup's coverage before confirming the restart.
+
+If the backup was successfully uploaded and extracted but applying the data failed, the panel suggests running `ql reload data` inside the container. For a Docker installation using the default Shell entrypoint, run this on the host:
+
+```bash
+docker exec -it qinglong ql reload data
+```
+
+This command replaces data again and restarts the service. Confirm that the staged backup exists and is complete before running it. For the internal TypeScript entrypoint, use that [entrypoint's](./local-cli) `reload --target data` command.
+
+### Manually restore a complete data archive
+
+To restore a `qinglong-data-*.tar.gz` archive created with the stopped-service procedure above, stop the container from the Compose deployment directory on the host and move the current `data` directory aside. Extract the backup into the deployment directory so the resulting structure remains `./data/...`. Check ownership and permissions for the container's runtime user, then run `docker compose start qinglong`. Do not overwrite a running database with backup files.
+
+Verify sign-in, scripts, configuration, tasks and logs. To roll back the version, use an image matching the backup as described above. After changing the image configuration, recreate the container with `docker compose up -d qinglong`.
 
 ## Internal API token renewal
 
@@ -58,14 +117,14 @@ Qinglong 2.23.0 fixes missing proactive renewal of system tokens and concurrent 
 
 | Symptom | Checks |
 | --- | --- |
-| Panel is unreachable | Run `docker compose ps` and `docker compose logs --tail 100 qinglong`; check port mapping, `QlPort`, proxy prefix and firewall |
-| Script not found | Check the path in Script Management; use `task folder/hello.js` for subdirectories |
+| Panel is unreachable | Run `docker compose ps` and `docker compose logs --tail 100 qinglong` in the deployment directory on the host; check port mapping, `QlPort`, proxy prefix and firewall |
+| Script not found | Check the path in Script Management; use `task folder/hello.js` in panel task commands for subdirectories, or `docker exec -it qinglong task folder/hello.js` to run manually from a Docker host |
 | Missing Node/Python module | Install the dependency under the correct language in Dependency Management; inspect installation logs before retrying |
 | Schedule does not fire | Check whether the task is enabled, its schedule and timezone, queue state and running instances |
 | Data mount is not writable | Check host directory permissions, container user and SELinux settings; see [Docker non-root guidance](../getting-started/installation-guide/docker) |
-| CLI returns 401/403 | Check credentials/token validity and run `ql auth status --scope crons --json` for the target module; verify environment tokens are not overriding saved credentials |
-| Unknown `ql` command | Use `command -v ql` and `ql --help` to distinguish the [remote CLI](./cli) from [internal tools](./local-cli) |
+| Remote npm CLI returns 401/403 | Check credentials/token validity in the client terminal and run `ql auth status --scope crons --json` for the task module; select the corresponding scope for other modules. Verify that `QL_URL` and `QL_ACCESS_TOKEN` are not overriding saved credentials |
+| Unknown `ql` command | Run `command -v ql` in the terminal where you execute commands, then use the entrypoint table above to distinguish default Shell commands, internal TypeScript tools and the remote npm CLI. Use `--help` for remote and TypeScript entrypoints; see [Basic Explanation](./basic-explanation) for default Shell commands |
 
-`ql check` installs dependencies, repairs the environment and reloads services. Start diagnosis with logs and configuration. Remove tokens, environment values and private repository credentials before sharing logs.
+The built-in `ql check` installs dependencies, repairs the environment and reloads services. Start diagnosis with logs and configuration. When repair is needed, Docker installations using the default Shell entrypoint can run `docker exec -it qinglong ql check` on the host; Linux installations run the command on the panel host. See [panel-internal tools](./local-cli) for the internal TypeScript entrypoint. Remove tokens, environment values and private repository credentials before sharing logs.
 
 See the [task API](../../api/crontab) for scheduling and timezone rules. In timezones with daylight saving, nonexistent spring-forward local times are skipped and the repeated autumn hour is not run a second time; `Asia/Shanghai` has no DST adjustment. There is no guarantee of persistent catch-up while the process is stopped. Invalid saved task or subscription rules are skipped with diagnostics, leaving their configuration available for correction.
