@@ -1,6 +1,6 @@
 # 面板内部工具
 
-青龙提供 TypeScript 实现的本机脚本执行和维护工具，随面板源码及内部构建交付。它与[远程 npm CLI](./cli)使用独立命令树，必须在实际安装面板的宿主机或容器内运行，需要 Node.js 22.12 或更高版本、Bash 以及任务所需的解释器。
+青龙提供 TypeScript 实现的本机脚本执行和维护工具，随面板源码及内部构建交付。它与[远程 npm CLI](./cli)使用独立命令树，必须在实际安装面板的宿主机或容器内运行，需要 Bash 以及任务所需的解释器。面板构建与回归验证沿用 Node.js 20 和 pnpm 8.3.1。独立远程 CLI 需要 Node.js 22.12 或更高版本。
 
 ## 构建与使用
 
@@ -56,6 +56,8 @@ export QL_CLI_ROOT=/absolute/path/to/qinglong/cli
 
 `check` 会安装依赖、修复并重载服务。`reload` 默认重启服务；`system/data` 用于应用暂存文件。`start --no-startup` 跳过操作系统启动注册，`start --reload` 跳过依赖安装、可选 hook 和启动注册。
 
+`update --download-only`（兼容写法 `update false`）只下载并校验暂存产物，必要时在暂存目录安装依赖，不应用程序替换或重启。`reload --target system` 应用已准备的系统升级，应用前再次校验；`reload --target data` 应用暂存备份，会替换当前数据。升级来源、程序恢复与数据备份的区别见[维护指南](./maintenance)。
+
 维护选项 `--root`、`--data-dir` 和 `--json` 放在 `--` 前。密码位置参数会出现在进程参数中，应只在可信终端操作。`repo/raw` 使用 `QL_DIR/QL_DATA_DIR`，不接受 `--root/--json`；仓库筛选采用 `grep -E` 的 POSIX 扩展正则。
 
 ## 脚本参数与兼容性
@@ -63,11 +65,16 @@ export QL_CLI_ROOT=/absolute/path/to/qinglong/cli
 ```bash
 # 执行器选项放在脚本名之前
 node /ql/cli/dist/ql.js task exec --root /ql demo.js now
+# 限制脚本执行时间
+node /ql/cli/dist/ql.js task exec --root /ql --timeout 30s demo.js now
+node /ql/cli/dist/ql.js task exec --root /ql -m 5m demo.py
 # -- 后的参数传给脚本
 node /ql/cli/dist/ql.js task exec --root /ql demo.js -- --mode daily
 ```
 
 `now` 跳过随机延迟；`conc`、`desi` 支持账号选择。配置和 hook 继续使用 Bash。`--json` 将脚本输出写入 stderr、最终结果写入 stdout，并保留脚本退出码。
+
+`--timeout`/`-m` 接受正数十进制时长，可使用 `s`、`m`、`h`、`d`，无后缀时按秒计算；`0`、负数、非法单位及超过计时器上限的值会被拒绝。未指定时使用 `CommandTimeoutTime`。超时会终止脚本及其后代进程，执行器退出码为 `124`，JSON 结果中的 `timedOut` 为 `true`。这是本地执行限制；[远程 npm CLI](./cli) 的同名选项只限制 HTTP 请求等待时间。
 
 兼容 `ql task <脚本>`、`task <脚本>` 和 `ql local <命令>`；与 API 动作同名的脚本使用明确的 `task exec`。配置了 `QL_DIR` 后，无参数 `ql task` 或 `task` 显示 JavaScript 脚本清单。`update false` 等价于 `--download-only`，`reload system/data/services` 对应 `--target`。
 

@@ -1,12 +1,18 @@
 # Linux 本机部署
 
-支持 Debian、Ubuntu、Alpine。启动过程会安装系统依赖并配置 nginx 等服务，建议使用专用环境。预先安装 Node.js、npm、Python3 和 pip3；运行用户需要管理系统依赖和服务的权限。使用新 CLI 时，Node.js 至少为 22.12，推荐 24。
+支持 Debian、Ubuntu、Alpine。启动过程会安装系统依赖并配置 nginx 等服务，建议使用专用环境。预先安装 Node.js、npm、Python3 和 pip3；运行用户需要管理系统依赖和服务的权限。面板构建与回归验证沿用 Node.js 20 和 pnpm 8.3.1。独立远程 CLI 需要 Node.js 22.12 或更高版本。默认容器使用 Python 3.11，本机部署需选择与用户脚本兼容的 Python 版本。
 
 ## 安装并设置路径
 
+以下命令供 2.23.0 正式发布后使用：
+
 ```bash
-npm install -g node-pre-gyp pnpm@8.3.1
-npm install -g @whyour/qinglong
+npm install -g @whyour/qinglong@2.23.0
+```
+
+安装完成后，设置路径并启动：
+
+```bash
 export QL_DIR="$(npm root -g)/@whyour/qinglong"
 export QL_DATA_DIR="$HOME/qinglong/data"
 mkdir -p "$QL_DATA_DIR"
@@ -18,3 +24,5 @@ qinglong
 启动后访问 `http://localhost:5700`，完成初始化并[创建第一个任务](../first-task)。
 
 `@whyour/qinglong` 安装面板；`@whyour/qinglong-cli` 安装远程客户端，二者都提供 `ql`。远程管理请按 [CLI 使用指南](/guide/user-guide/cli)选择独立入口。
+
+升级前备份完整数据，并保持 `QL_DATA_DIR` 指向原数据目录。面板及脚本依赖继续使用 pnpm 8.3.1；Node/pnpm 运行时迁移和 npm 包重打包将在后续版本处理。Docker 部署按[容器安装指南](./docker)拉取新镜像并重建。依赖出现加载错误时，在依赖管理中重新安装对应依赖并查看日志。

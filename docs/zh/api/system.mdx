@@ -129,7 +129,7 @@ PUT /update-check
 PUT /update
 ```
 
-执行系统更新。
+在后台执行 `ql update false`，下载并校验暂存升级产物，必要时在暂存目录安装依赖。初始 `200` 不表示下载完成或升级已应用；通过 WebSocket 的 `updateSystemVersion` 消息查看进度及最终 `success`/`failed` 状态。准备成功后调用重载接口并指定 `{"type":"system"}` 才应用升级，详见[维护指南](../guide/user-guide/maintenance)。
 
 #### 重载系统
 ```http
@@ -139,10 +139,11 @@ PUT /reload
 **请求体**
 ```typescript
 {
-  type?: string | null  // 重载类型
+  type?: 'system' | 'data' | '' | null  // system 应用暂存升级；data 应用暂存备份
 }
 ```
 
+省略 `type`、传空字符串或 `null` 只重启服务。该接口启动独立重载进程，响应 `200` 不表示重载或健康检查已经完成。
 
 #### 发送通知
 ```http
@@ -347,7 +348,7 @@ PUT /command-stop
 PUT /data/export
 ```
 
-响应为压缩备份文件下载。可传入 JSON 请求体 `{"type":["scripts","config","log"]}` 追加这些数据目录。省略 `type` 或传空数组时，只导出 `db` 和 `upload`，不包含脚本、配置及日志；`base` 表示基础数据，不是额外目录。完整备份方式见[维护指南](../guide/user-guide/maintenance)。
+响应为压缩备份文件下载。可传入 JSON 请求体 `{"type":["scripts","config","log"]}` 追加这些数据目录。选择 `scripts` 时自动加入已存在的 `script-history`；也可显式选择 `script-history`，该目录尚未创建时会跳过。省略 `type` 或传空数组时，只导出 `db` 和 `upload`，不包含脚本、历史、配置及日志；`base` 表示基础数据，不是额外目录。完整备份方式见[维护指南](../guide/user-guide/maintenance)。
 
 #### 导入数据
 ```http

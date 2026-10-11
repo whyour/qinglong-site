@@ -1,12 +1,18 @@
 # Native Linux deployment
 
-Supports Debian, Ubuntu and Alpine. Startup installs system dependencies and configures services including nginx; use a dedicated environment. Install Node.js, npm, Python3 and pip3 first. The runtime user needs permission to manage system dependencies and services. The new CLI requires Node.js 22.12 or newer; 24 is recommended.
+Supports Debian, Ubuntu and Alpine. Startup installs system dependencies and configures services including nginx; use a dedicated environment. Install Node.js, npm, Python3 and pip3 first. The runtime user needs permission to manage system dependencies and services. Panel builds and regression checks use Node.js 20 and pnpm 8.3.1. The standalone remote CLI requires Node.js 22.12 or newer. Default containers use Python 3.11; native deployments need a Python version compatible with user scripts.
 
 ## Install and configure paths
 
+Use this command after Qinglong 2.23.0 is published:
+
 ```bash
-npm install -g node-pre-gyp pnpm@8.3.1
-npm install -g @whyour/qinglong
+npm install -g @whyour/qinglong@2.23.0
+```
+
+After installation, configure the paths and start the panel:
+
+```bash
 export QL_DIR="$(npm root -g)/@whyour/qinglong"
 export QL_DATA_DIR="$HOME/qinglong/data"
 mkdir -p "$QL_DATA_DIR"
@@ -18,3 +24,5 @@ qinglong
 Open `http://localhost:5700`, initialize the panel and [create your first task](../first-task).
 
 `@whyour/qinglong` installs the panel; `@whyour/qinglong-cli` installs the remote client. Both provide `ql`; see the [CLI guide](/guide/user-guide/cli) for separate entrypoints.
+
+Back up all data before upgrading and keep `QL_DATA_DIR` pointing to the existing data directory. Panel and script dependencies continue to use pnpm 8.3.1. Node/pnpm migration and npm package repackaging are deferred to a later release. Follow the [Docker guide](./docker) to pull and recreate containers. If dependencies fail to load, reinstall the affected packages through Dependency Management and inspect the logs.

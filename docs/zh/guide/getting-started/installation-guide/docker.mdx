@@ -16,6 +16,19 @@ docker run -dit \
 
 访问 `http://localhost:5700` 完成初始化。`QlBaseUrl` 为可选的部署路径前缀，例如 `/test`；`QlPort` 为面板监听端口，默认为 `5700`。修改端口时，`-p` 冒号右侧必须与 `QlPort` 一致。
 
+青龙 2.23.0 的默认镜像运行时如下；旧版本镜像的运行时可能不同：
+
+| 默认镜像 | 系统 | Node.js | Python |
+| --- | --- | --- | --- |
+| `latest` | Alpine | APK 安装的版本 | 3.11 |
+| `debian` | Debian 12（Bookworm） | 20 | 3.11 |
+
+青龙 2.23.0 是 Python 3.10 兼容镜像的最后一个版本。`2.23.0-python3.10` 和 `2.23.0-debian-python3.10` 发布后即停止维护，不再提供后续更新。请验证脚本和依赖后迁移至默认的 Python 3.11 镜像。
+
+从旧容器升级时，先备份持久化数据，再验证用户脚本和依赖与新运行时的兼容性，步骤见[维护指南](/guide/user-guide/maintenance)。
+
+首次将空的宿主机目录挂载到 `/ql/data` 时，该目录会遮蔽镜像在此路径下预装的 Python 依赖。运行需要 `requests` 的 Python 脚本或通知脚本前，请在面板的依赖管理中安装 Python 依赖 `requests`，并确认安装成功。升级时复用原有数据目录；运行时版本变化后的依赖检查见维护指南。
+
 ## Debian 与非 root 运行
 
 需要 Alpine 不支持的依赖，或需要以非 root 用户运行时，使用 `whyour/qinglong:debian`。Alpine 的 `crond` 需要 root 权限。先确保宿主机挂载目录允许容器中的 `qinglong` 用户写入，再运行：

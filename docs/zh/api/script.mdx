@@ -3,6 +3,8 @@
 ## 基础路径
 `/scripts`
 
+公共 API 的完整前缀为 `/open/scripts`。以下历史接口及保存留档行为适用于青龙 2.23.0 或更高版本，需要 `scripts` 权限；操作流程见[脚本编辑历史](/guide/user-guide/script-history)。
+
 ## 接口列表
 
 ### 获取脚本列表
@@ -39,7 +41,7 @@ GET /detail
 POST /
 ```
 
-**请求体** (multipart/form-data)
+**请求体**：上传文件使用 `multipart/form-data` 的 `file` 字段；创建目录、创建或保存文本内容使用 JSON。
 ```typescript
 {
   file?: File,           // 上传的文件
@@ -47,23 +49,104 @@ POST /
   path?: string,         // 文件路径
   content?: string,      // 文件内容
   originFilename?: string, // 原文件名
-  directory?: string     // 目录名（创建目录时使用）
+  directory?: string,    // 目录名（创建目录时使用）
+  skipHistory?: boolean, // 明确确认超限内容不留档保存
+  expectedHash?: string  // skipHistory=true 时必填，当前内容 SHA-256
 }
 ```
+
+上传文件、新建文件和创建目录不会自动留档。通过 JSON `content` 覆盖已有脚本时会保留原内容；保存文本时应提供 `content`，允许空字符串。调试器另存为覆盖其他已有脚本时，目标旧内容进入历史，删除源文件前备份源内容；安全别名指向同一脚本时按原地保存处理。
 
 ### 更新脚本内容
 ```http
 PUT /
 ```
 
-**请求体**
+**请求体** (`application/json`)
 ```typescript
 {
   filename: string,  // 文件名
   path?: string,    // 文件路径
-  content: string   // 文件内容
+  content: string,  // 文件内容，允许空字符串
+  skipHistory?: boolean,
+  expectedHash?: string // skipHistory=true 时必填，64 位十六进制 SHA-256
 }
 ```
+
+更新已有脚本内容使用 JSON；文件上传使用上面的 POST 接口。内容发生变化时先保留当前内容，相同内容不新增历史。
+
+保存或恢复的 `data` 按结果返回：
+
+| 结果 | 返回字段 |
+| --- | --- |
+| 内容变更并记录历史 | `content`、`changed: true`、`historyRecorded: true`、`cleanupPending` |
+| 内容相同 | `content`、`changed: false` |
+| 明确确认超限内容不留档保存 | `content`、`changed: true`、`historyRecorded: false` |
+
+只有第一种结果包含 `cleanupPending`。其值为 `true` 时脚本已经保存，但历史配额清理未完成，请检查数据目录权限和空间。
+
+### 获取脚本历史列表
+
+```http
+GET /history
+```
+
+查询为 `{ filename: string, path?: string }`。这里使用 `filename`，区别于 `GET /detail` 的 `file`。
+
+成功返回 `{ code: 200, data: { versions, currentHash, limit } }`。`versions` 最新在前，`limit` 为保留版本数上限（默认 20），`currentHash` 是服务器当前已保存内容的 SHA-256。
+
+| 每个版本的字段 | 含义 |
+| --- | --- |
+| `id` | 版本 UUID |
+| `createdAt` | ISO 格式时间 |
+| `source` | `baseline`（首次留档的旧内容）、`save`、`restore` 或 `external` |
+| `hash` | 该版本内容的 SHA-256 |
+| `size` | UTF-8 内容字节数 |
+| `identical` | 是否与服务器当前内容相同 |
+
+### 获取历史内容与当前内容
+
+```http
+GET /history/detail
+```
+
+查询为 `{ filename: string, path?: string, id: string }`，`id` 必须是列表返回的版本 UUID。
+
+成功 `data` 为 `{ version, current, currentHash }`。`version` 包含 `id`、`createdAt`、`source`、`hash` 和 `content`，不含列表中的 `size`、`identical`。`current` 是服务器当前已保存的文本，不包含编辑器尚未保存的草稿。
+
+### 恢复历史版本
+
+```http
+PUT /history/restore
+```
+
+**JSON 请求体**
+
+```typescript
+{
+  filename: string,
+  path?: string,
+  id: string,           // 版本 UUID
+  expectedHash: string  // 预览时 currentHash，64 位十六进制 SHA-256
+}
+```
+
+恢复前会保留当前内容。预览后文件有变化时返回 HTTP 409 和业务 `code: 409`，应重新读取、比较并确认；不要仅替换哈希自动重试。普通内容保存不要求此哈希，不能将其视为所有编辑操作均有并发覆盖保护。
+
+### 历史限制与错误
+
+历史支持不超过 1 MiB 的 UTF-8 文本（含空文件，不支持 NUL 或非法 UTF-8），每脚本最多保留 20 个旧版本。上传、新增、重命名、删除、订阅更新和外部编辑不会主动留档；重命名不迁移历史，已删除脚本不能通过历史找回。
+
+只有保存返回 HTTP 413、且响应顶层包含 `historyUnavailable: true`、`currentHash`，才可经操作者明确确认后以 `skipHistory: true` 和该 `expectedHash` 重试。本次保存会提示未留档；确认期间文件变化仍返回 409。历史包容量不足的其他 413、历史损坏或权限错误不能通过此选项绕过。
+
+| HTTP / 业务代码 | 含义 |
+| --- | --- |
+| `404` | 脚本或历史版本不存在、版本已清理 |
+| `409` | 恢复或超限确认时当前文件已变化 |
+| `413` | 文本或历史包容量限制 |
+| `500` | 历史包无法读取或已损坏 |
+
+参数校验可返回 400，路径及资源权限限制可返回 403。请同时检查 HTTP 状态与业务 `code`。整体配额、清理和完整备份见[脚本编辑历史](/guide/user-guide/script-history)。
 
 ### 删除脚本
 ```http

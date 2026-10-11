@@ -136,6 +136,7 @@ Environment variable creation accepts an array, for example in `envs.json`:
 ql env create --data @envs.json --json
 ql env list --query '{"searchValue":"EXAMPLE"}' --json
 ql script create --file ./demo.js --data '{"filename":"demo.js","path":""}' --json
+ql script update --data '{"filename":"demo.js","path":"","content":"console.log(1);\n"}' --json
 ql script get --query '{"file":"demo.js","path":""}' --json
 ql config get --query '{"path":"config.sh"}' --json
 ql log download --data '{"filename":"example.log","path":"demo"}' --output ./example.log --json
@@ -144,6 +145,44 @@ ql dashboard overview --json
 ```
 
 Use `--file` for uploads and `--output` for downloads. Existing output files are never overwritten. App commands hide `client_secret` and `tokens` unless `--show-secrets` is explicit. Other resources may return environment values, file contents or session data.
+
+Use `script create --file` for script uploads and `script update --data` with JSON for existing content. Uploads do not record history automatically. Saving changed content through the panel preserves the previous content.
+
+### Read and restore script history
+
+History commands require CLI **0.1.2 or newer**, a target running Qinglong **2.23.0 or newer**, and `scripts` permission. Updating the local CLI does not add these APIs to an older panel. See [script editing history](./script-history) for scope and retention limits.
+
+Read the version list first:
+
+```bash
+ql script history-list --query '{"filename":"demo.js","path":""}' --json
+```
+
+Choose an `id` from `data.versions`. Create `history-detail.json`, replacing the placeholder with the version UUID actually returned:
+
+```json
+{"filename":"demo.js","path":"","id":"<version-uuid-from-list>"}
+```
+
+```bash
+ql script history-detail --query @history-detail.json --json
+```
+
+The detail's `data.version.content` is historical content, and `data.current` is the content saved on the server. Review the comparison, then create `history-restore.json` with the selected UUID and the complete `data.currentHash` returned by this detail request:
+
+```json
+{"filename":"demo.js","path":"","id":"<version-uuid-from-list>","expectedHash":"<currentHash-from-detail>"}
+```
+
+```bash
+ql script history-restore --data @history-restore.json --json
+```
+
+`id` must be a real UUID and `expectedHash` must be the returned 64-character hexadecimal hash; do not submit the placeholder text. History queries use `filename`, unlike the existing `script get` query's `file`. None of these three history commands takes a positional ID.
+
+A restore that changes content first preserves the current content and returns `data.changed: true`, `historyRecorded: true` and `cleanupPending`. Identical content returns only `content` and `changed: false`. `cleanupPending: true` means the script was saved but history cleanup is pending; check storage permissions and free space.
+
+HTTP/API 409 means the file changed after preview, and the CLI exits with code 1. Read and compare again, then ask the operator to confirm. Do not refresh the hash and restore automatically. A cleaned-up version may return 404. See the [Script API](/api/script) for text limits and explicit confirmation to save without history.
 
 ## Generic requests and command reference
 
@@ -157,7 +196,7 @@ The [API and CLI route reference](/api/routes) lists registered commands and HTT
 
 - `--data` accepts inline JSON, `@file.json` or `-` (stdin). `--query` supports the same sources but requires an object.
 - Do not read stdin through both options, or provide a field through both `--data` and a named flag.
-- Generic requests and newer resource commands support `--timeout` in seconds: default 30, maximum 3600. Check `--help` for the options supported by existing task/subscription commands.
+- Generic requests and newer resource commands support `--timeout` in seconds: default 30, maximum 3600. This limits the HTTP request wait, not script execution, and does not stop an accepted remote task. Check `--help` for the options supported by existing task/subscription commands.
 - `task list` defaults to 50 items per page, maximum 200. Task/subscription logs default to the last 200 lines, maximum 10000. Line truncation occurs on the client and does not reduce server reads.
 
 ## Output and failures

@@ -21,6 +21,12 @@ task -m <max_time> <file_path>
 task <file_path> -- -u whyour -p password
 ```
 
+`-m` 放在脚本名之前，例如 `task -m 30s demo.js now`、`task -m 5m demo.py`、`task -m 1h demo.sh`。无后缀时按秒计算；未指定 `-m` 时使用配置中的 `CommandTimeoutTime`，该配置为空时不设置超时。
+
+超时会终止脚本及其后代进程，并按执行模式运行已配置的结束 hook。普通和 `desi` 模式记录超时码 `124`，`conc` 保留原有汇总行为；默认 Shell 包装器 `task.sh` 最终仍退出 `0`。检查任务日志中的超时信息，不能只用外层命令的 `$?` 判断成功。[内部 TypeScript 执行器](./local-cli)会返回超时码 `124`；远程 npm CLI 的 `--timeout` 则是 HTTP 请求等待时间。
+
+Shell 脚本在子 Shell 中执行，继承 before hook 的变量和函数。脚本中的 `cd`、Shell 选项、`exit` 或 `exec` 不再改变主包装器后续的 hook 与收尾流程；依赖这些副作用的旧脚本需要调整。
+
 - ql
 
 ```bash
@@ -58,13 +64,15 @@ ql resettfa
 
 ## 开发
 
+面板构建与回归验证沿用 Node.js 20 和 pnpm 8.3.1。独立远程 CLI 需要 Node.js 22.12 或更高版本。开发环境还需 Python3 和 pip3。
+
 ```bash
 git clone https://github.com/whyour/qinglong.git
 cd qinglong
 cp .env.example .env
 # 推荐使用 pnpm https://pnpm.io/zh/installation
 npm install -g pnpm@8.3.1
-pnpm install
+pnpm install --frozen-lockfile
 pnpm start
 # 打开你的浏览器，访问 <http://127.0.0.1:5700>
 ```

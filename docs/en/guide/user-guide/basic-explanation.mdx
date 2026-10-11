@@ -23,6 +23,12 @@ task -m <max_time> <file_path>
 task <file_path> -- -u whyour -p password
 ```
 
+Place `-m` before the script name, for example `task -m 30s demo.js now`, `task -m 5m demo.py`, or `task -m 1h demo.sh`. Values without a suffix are seconds. Without `-m`, the configured `CommandTimeoutTime` applies; an empty configuration sets no timeout.
+
+A timeout terminates the script and its descendant processes, with configured after hooks run according to the execution mode. Normal and `desi` modes record timeout code `124`; `conc` retains its existing aggregate behavior. The default Shell wrapper `task.sh` still exits with `0`, so check the task log for timeout information instead of relying only on the outer command's `$?`. The [internal TypeScript runner](./local-cli) returns `124` on timeout; the remote npm CLI's `--timeout` controls HTTP request waiting time.
+
+Shell scripts run in a child Shell that inherits before-hook variables and functions. A script's `cd`, Shell options, `exit`, or `exec` no longer changes the main wrapper's subsequent hooks and cleanup. Adjust older scripts that rely on those side effects.
+
 - ql
 
 ```bash
@@ -60,13 +66,15 @@ ql resettfa
 
 ## Development
 
+Panel builds and regression checks use Node.js 20 and pnpm 8.3.1. The standalone remote CLI requires Node.js 22.12 or newer. Development also needs Python3 and pip3.
+
 ```bash
 git clone https://github.com/whyour/qinglong.git
 cd qinglong
 cp .env.example .env
 # Recommended use pnpm https://pnpm.io/zh/installation
 npm install -g pnpm@8.3.1
-pnpm install
+pnpm install --frozen-lockfile
 pnpm start
 # Open your browser and visit <http://127.0.0.1:5700>
 ```

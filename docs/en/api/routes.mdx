@@ -2,7 +2,7 @@
 
 This reference maps HTTP API endpoints to CLI commands. HTTP paths include `/open`. See [authentication](./preparation) and the [remote CLI guide](/guide/user-guide/cli).
 
-The CLI registers 143 routes, available through `ql api routes --json`. The backend also dynamically registers `GET /open/dashboard/successes` and `GET /open/dashboard/failures`. These are not in the CLI catalogue and cannot be called through `api request`; use an HTTP client as described under [Dashboard](./dashboard). The CLI route count is not the complete backend endpoint count.
+CLI 0.1.2 registers 146 routes, available through `ql api routes --json`. The new script history routes require Qinglong 2.23.0 or newer. The backend also dynamically registers `GET /open/dashboard/successes` and `GET /open/dashboard/failures`. These are not in the CLI catalogue and cannot be called through `api request`; use an HTTP client as described under [Dashboard](./dashboard). The CLI route count is not the complete backend endpoint count.
 
 ## Input conventions
 
@@ -112,13 +112,18 @@ The CLI registers 143 routes, available through `ql api routes --json`. The back
 | --- | --- | --- | --- |
 | `ql script list` | GET | `/open/scripts` | --query |
 | `ql script get` | GET | `/open/scripts/detail` | --query |
+| `ql script history-list` | GET | `/open/scripts/history` | --query |
+| `ql script history-detail` | GET | `/open/scripts/history/detail` | --query |
+| `ql script history-restore` | PUT | `/open/scripts/history/restore` | --data, --query |
 | `ql script create` | POST | `/open/scripts` | --data, --file (file), --query |
-| `ql script update` | PUT | `/open/scripts` | --data, --file (file), --query |
+| `ql script update` | PUT | `/open/scripts` | --data, --query |
 | `ql script delete` | DELETE | `/open/scripts` | --data, --query |
 | `ql script download` | POST | `/open/scripts/download` | --data, --output, --query |
 | `ql script run` | PUT | `/open/scripts/run` | --data, --query |
 | `ql script stop` | PUT | `/open/scripts/stop` | --data, --query |
 | `ql script rename` | PUT | `/open/scripts/rename` | --data, --query |
+
+Use `script create --file` to upload a file and `script update --data` to update an existing script with JSON. History queries use `filename`; the existing `script get` query uses `file`. See the [Script API](./script) and [remote CLI guide](/guide/user-guide/cli) for parameters and restore conflicts.
 
 ## logs
 

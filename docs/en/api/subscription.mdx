@@ -149,5 +149,6 @@ GET /:id/logs
 
 ## Notes
 - Parameter validation using celebrate/Joi
-- Cron expressions are validated through cron-parser
+- Cron expressions are validated and normalized through cron-parser. Subscriptions share scheduling rules with tasks, additional scheduling rules and system Node cron jobs; Node scheduling uses node-cron. See [Schedules and time zones](./crontab#schedules-and-time-zones).
+- `schedule_type: "crontab"` uses a cron plan. Interval schedules use `interval_schedule` separately and are not interpreted as cron fields.
 - Supports batch operations (run, stop, enable, disable, etc.)

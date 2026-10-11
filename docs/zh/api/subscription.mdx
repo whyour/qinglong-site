@@ -149,5 +149,6 @@ GET /:id/logs
 
 ## 注意事项
 - 使用 celebrate/Joi 进行参数验证
-- cron 表达式会通过 cron-parser 进行有效性验证
+- cron 表达式由 cron-parser 校验并标准化；订阅与任务、额外定时规则和系统 Node cron 共用调度规则，Node 调度使用 node-cron，详见[定时规则与时区](./crontab#定时规则与时区)
+- `schedule_type: "crontab"` 使用 cron 计划；间隔计划通过 `interval_schedule` 独立配置，不按 cron 字段解释
 - 支持批量操作（运行、停止、启用、禁用等）
