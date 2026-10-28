@@ -16,14 +16,16 @@ docker run -dit \
 
 Open `http://localhost:5700` to initialize the panel. `QlBaseUrl` is an optional deployment prefix such as `/test`. `QlPort` controls the listening port and defaults to `5700`; the right side of `-p` must match it.
 
-Qinglong 2.23.0 uses these runtimes in its default images. Older images may use different versions:
+Qinglong 2.24.0 uses these runtimes in its default images. Older images may use different versions:
 
 | Default image | System | Node.js | Python |
 | --- | --- | --- | --- |
-| `latest` | Alpine | Version supplied by APK | 3.11 |
-| `debian` | Debian 12 (Bookworm) | 20 | 3.11 |
+| `latest` / `2.24.0` | Alpine | 24 | 3.11 |
+| `debian` / `2.24.0-debian` | Debian 12 (Bookworm) | 24 | 3.11 |
 
-Qinglong 2.23.0 is the last release of the Python 3.10 compatibility images. After publication, `2.23.0-python3.10` and `2.23.0-debian-python3.10` are no longer maintained and will receive no further updates. Validate your scripts and dependencies, then migrate to the default Python 3.11 images.
+Qinglong 2.23.0 is the last release of the Python 3.10 compatibility images. `2.23.0-python3.10` and `2.23.0-debian-python3.10` are no longer maintained; 2.24.0 does not publish these variants. Validate your scripts and dependencies, then migrate to the default Python 3.11 images.
+
+The 2.24.0 Alpine image supports amd64, arm/v6, arm/v7, arm64, ppc64le, s390x and 386. The Debian image supports amd64, arm64, ppc64le and s390x; arm/v7 is unavailable.
 
 When upgrading an older container, back up persistent data and check your scripts and dependencies against the new runtime. See [maintenance](/guide/user-guide/maintenance) for the steps.
 

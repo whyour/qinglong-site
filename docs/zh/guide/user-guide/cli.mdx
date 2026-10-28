@@ -9,7 +9,7 @@
 需要 Node.js **22.12 或更高版本**，推荐 Node.js 24。
 
 ```bash
-npm install -g @whyour/qinglong-cli
+npm install -g @whyour/qinglong-cli@0.1.3
 ql --help
 ql task --help
 ```
@@ -17,7 +17,7 @@ ql task --help
 面板自带的命令也叫 `ql`。在已安装面板的机器上，可以临时调用远程 CLI，避免占用内置命令名：
 
 ```bash
-npm exec --package=@whyour/qinglong-cli -- ql --help
+npm exec --package=@whyour/qinglong-cli@0.1.3 -- ql --help
 ```
 
 | 入口 | 用途 | 示例 |
@@ -220,4 +220,4 @@ CLI 不自动重试 HTTP 请求。网络错误或超时后，远端操作可能�
 
 npm 包附带 `skills/qinglong-cli`，可复制到所用 Agent 的 skills 目录，提供认证、命令选择和结果检查说明。Skill 使用独立的远程 npm 入口，不保存凭据、不替代面板权限。本机执行和维护使用独立的 `qinglong-local` Skill。
 
-源码参考：[远程 CLI](https://github.com/whyour/qinglong/tree/master/cli)、[远程 Skill](https://github.com/whyour/qinglong/tree/master/cli/skills/qinglong-cli)。
+2.24.0 版本源码参考：[远程 CLI](https://github.com/whyour/qinglong/tree/v2.24.0/cli)、[远程 Skill](https://github.com/whyour/qinglong/tree/v2.24.0/cli/skills/qinglong-cli)。

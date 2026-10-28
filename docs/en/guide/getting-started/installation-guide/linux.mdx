@@ -1,13 +1,13 @@
 # Native Linux deployment
 
-Supports Debian, Ubuntu and Alpine. Startup installs system dependencies and configures services including nginx; use a dedicated environment. Install Node.js, npm, Python3 and pip3 first. The runtime user needs permission to manage system dependencies and services. Panel builds and regression checks use Node.js 20 and pnpm 8.3.1. The standalone remote CLI requires Node.js 22.12 or newer. Default containers use Python 3.11; native deployments need a Python version compatible with user scripts.
+Supports Debian, Ubuntu and Alpine. Startup installs system dependencies and configures services including nginx; use a dedicated environment. Install Node.js, npm, Python3 and pip3 first. The 2.24.0 npm panel package has been verified on Node.js 20 and 24; panel and script dependencies use pnpm 8.3.1. The standalone remote CLI requires Node.js 22.12 or newer. Default containers use Python 3.11; native deployments need a Python version compatible with user scripts.
 
 ## Install and configure paths
 
-Use this command after Qinglong 2.23.0 is published:
+Install 2.24.0:
 
 ```bash
-npm install -g @whyour/qinglong@2.23.0
+npm install -g @whyour/qinglong@2.24.0
 ```
 
 After installation, configure the paths and start the panel:
@@ -25,4 +25,4 @@ Open `http://localhost:5700`, initialize the panel and [create your first task](
 
 `@whyour/qinglong` installs the panel; `@whyour/qinglong-cli` installs the remote client. Both provide `ql`; see the [CLI guide](/guide/user-guide/cli) for separate entrypoints.
 
-Back up all data before upgrading and keep `QL_DATA_DIR` pointing to the existing data directory. Panel and script dependencies continue to use pnpm 8.3.1. Node/pnpm migration and npm package repackaging are deferred to a later release. Follow the [Docker guide](./docker) to pull and recreate containers. If dependencies fail to load, reinstall the affected packages through Dependency Management and inspect the logs.
+Back up all data before upgrading and keep `QL_DATA_DIR` pointing to the existing data directory. For an isolated Python venv on a native installation, follow the [native deployment guide](https://github.com/whyour/qinglong/blob/v2.24.0/README-NODE.md). Follow the [Docker guide](./docker) to pull and recreate containers. If dependencies fail to load, reinstall the affected packages through Dependency Management and inspect the logs.

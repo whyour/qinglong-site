@@ -69,7 +69,7 @@ A system upgrade preserves user data and `.env`. If program replacement fails or
 
 ## Upgrade the image
 
-This release keeps the existing runtime configuration: the default Debian image uses Debian 12 and Node.js 20, while the default Alpine image installs Node.js through APK. Both default images use Python 3.11. Runtime migration is deferred to a later release. See [Docker deployment](../getting-started/installation-guide/docker) for the configuration. An in-panel upgrade does not replace the container operating system, Node.js or Python; changing those requires pulling an image and recreating the container.
+The default Alpine and Debian images in 2.24.0 use Node.js 24 and Python 3.11; Debian is based on Debian 12. See [Docker deployment](../getting-started/installation-guide/docker) for the configuration and architecture list. An in-panel upgrade does not replace the container operating system, Node.js or Python; moving from an older runtime requires pulling a new image and recreating the container.
 
 After upgrading, try representative JavaScript, Python and Shell tasks, and check subscriptions and notifications. User-installed dependencies may need changes for a new runtime. If native modules fail to load, Python extensions fail to import, or modules are missing, reinstall the affected dependencies through Dependency Management in the new container and inspect installation and task logs. Python 3.10 [reached end of life](https://devguide.python.org/versions/) on 2026-10-01; users of older compatibility images should test their scripts on Python 3.11.
 
