@@ -1,6 +1,6 @@
 # Panel-internal tools
 
-Qinglong includes TypeScript tools for local script execution and maintenance, delivered with the panel source and internal build. They use a separate command tree from the [remote npm CLI](./cli) and must run on the actual panel host or inside its container. They require Bash and the interpreters required by your tasks. Panel builds and regression checks use Node.js 20 and pnpm 8.3.1. The standalone remote CLI requires Node.js 22.12 or newer.
+Qinglong includes TypeScript tools for local script execution and maintenance, delivered with the panel source and internal build. They use a separate command tree from the [remote npm CLI](./cli) and must run on the actual panel host or inside its container. They require Bash and the interpreters required by your tasks. Default container images use Node.js 24 and pnpm 8.3.1; the 2.24.0 npm package has been verified on Node.js 20 and 24. The standalone remote CLI requires Node.js 22.12 or newer.
 
 ## Build and run
 

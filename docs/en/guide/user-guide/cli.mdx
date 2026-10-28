@@ -9,7 +9,7 @@ Available commands and endpoints depend on the installed CLI and panel versions.
 Requires **Node.js 22.12 or newer**; Node.js 24 is recommended.
 
 ```bash
-npm install -g @whyour/qinglong-cli
+npm install -g @whyour/qinglong-cli@0.1.3
 ql --help
 ql task --help
 ```
@@ -17,7 +17,7 @@ ql task --help
 The panel also provides a command named `ql`. On a panel host, invoke the remote package temporarily to avoid replacing the built-in command:
 
 ```bash
-npm exec --package=@whyour/qinglong-cli -- ql --help
+npm exec --package=@whyour/qinglong-cli@0.1.3 -- ql --help
 ```
 
 | Entrypoint | Purpose | Example |
@@ -220,4 +220,4 @@ The CLI never automatically retries HTTP requests. After a network error or time
 
 The npm package includes `skills/qinglong-cli`. Copy it into your agent's skills directory for authentication, command selection and result verification guidance. It uses the remote npm entrypoint, stores no credentials and grants no additional permissions. Local execution and maintenance use the separate `qinglong-local` Skill.
 
-Sources: [CLI](https://github.com/whyour/qinglong/tree/master/cli), [remote Skill](https://github.com/whyour/qinglong/tree/master/cli/skills/qinglong-cli).
+2.24.0 sources: [CLI](https://github.com/whyour/qinglong/tree/v2.24.0/cli), [remote Skill](https://github.com/whyour/qinglong/tree/v2.24.0/cli/skills/qinglong-cli).
