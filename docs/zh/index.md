@@ -16,7 +16,7 @@ hero:
       link: /guide/user-guide/cli
     - theme: alt
       text: 在线演示
-      link: https://demo.qinglong.online
+      link: http://demo.qinglong.online:4433/
   image:
     src: https://qn.whyour.cn/logo.png
     alt: Qinglong Logo
